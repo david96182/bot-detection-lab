@@ -27,10 +27,11 @@ def capture():
         print(packet.length)
         # packet.pretty_print()
 
+
 class my_thread(Thread):
 
     def run(self):
-        time.sleep(random.uniform(0.5,1.66))
+        time.sleep(random.uniform(0.5, 1.66))
         print(f'{datetime.datetime.now()}running thread {threading.current_thread().name}')
         times = datetime.datetime.now()
         with open('log.txt', 'a') as f:
@@ -38,9 +39,7 @@ class my_thread(Thread):
         time.sleep(5)
 
 
-
-if __name__ == '__main__':
-    #capture()
+def test_threads():
     thread1 = my_thread(name='thread1')
     thread2 = my_thread()
     thread3 = my_thread()
@@ -96,3 +95,12 @@ if __name__ == '__main__':
     threadss = list(threading.enumerate())
     for thread in threadss:
         print(thread.name)
+
+
+if __name__ == '__main__':
+    # capture()
+    arr = ['Dog', 'Cat', 'Bird', 'Fish']
+
+    if 'Monkey' in arr and 'Camel' in arr:
+        print('Chirp')
+    print(arr)

@@ -15,8 +15,9 @@ Packet Analyzer for the Capture Module
  :TotBytes
  :SrcBytes
 """
+from packet import FlowAnalysis
 from settings import logger as logging
-
+import multiprocessing as mp
 from pyshark import LiveCapture
 
 
@@ -79,13 +80,17 @@ class Capture:
         capture.sniff(timeout=0)
         logging.info('Starting capture on interface %s', self.interface)
         for packet in capture.sniff_continuously():
-            # update flow id from running process
-            packet.pretty_print()
             key, inv_key = get_flow_id(packet)
-            if key or inv_key not in self.flow_ids:
+            if key not in self.flow_ids or inv_key not in self.flow_ids:
                 self.flow_ids.append(key)
+                worker = FlowAnalysis(key, packet)
+
+                worker.start()
+                print(mp.get_all_start_methods())
+                print(mp.active_children())
+                print(mp.current_process())
             else:
-                pass
+                logging.error('Key or Inv_key exists %s', key)
 
     def stop(self):
         """
