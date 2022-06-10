@@ -1,10 +1,14 @@
+from multiprocessing import Process
+import pyshark
 
 
-class Packet_Capture():
-    """
+class FlowAnalysis(Process):
+    def __init__(self, name, packet):
+        super().__init__(name)
+        self.packet = packet
 
-    """
-    def __int__(self, interface, output):
-        self.interface = interface
-        self.output = output
+    def run(self):
+        print(packet.pretty_print())
 
+    def flow_analysis(self, packet):
+        pass

@@ -1,9 +1,31 @@
 import datetime
+from settings import logger as logging
 import random
 import threading
 import time
 from threading import Thread
 
+import pyshark.tshark.tshark
+
+
+def capture():
+    logging.error('Starting capture on interface:')
+    # interface = str(config.get_config()['interface']['network_interface'])
+    # out_file = str(config.get_config()['pcap']['pcap_file'])
+    interface = 'enp0s3'
+    logging.error('Starting capture on interface: %s' % interface)
+    # check if interface is correct
+    interfaces = pyshark.tshark.tshark.get_tshark_interfaces()
+    print(interfaces)
+
+    capture = LiveCapture(interface, output_file=out_file)
+    capture.sniff(timeout=0)
+    for packet in capture.sniff_continuously():
+        print('packet')
+        print(packet.layers)
+        print(packet.frame_info)
+        print(packet.length)
+        # packet.pretty_print()
 
 class my_thread(Thread):
 
