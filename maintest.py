@@ -1,4 +1,7 @@
 import datetime
+
+from pyshark import LiveCapture
+
 from settings import logger as logging
 import random
 import threading
@@ -9,14 +12,11 @@ import pyshark.tshark.tshark
 
 
 def capture():
-    logging.error('Starting capture on interface:')
-    # interface = str(config.get_config()['interface']['network_interface'])
-    # out_file = str(config.get_config()['pcap']['pcap_file'])
-    interface = 'enp0s3'
+
+    out_file = 'capture.pcap'
+    interface = 'wlp1s0'
     logging.error('Starting capture on interface: %s' % interface)
     # check if interface is correct
-    interfaces = pyshark.tshark.tshark.get_tshark_interfaces()
-    print(interfaces)
 
     capture = LiveCapture(interface, output_file=out_file)
     capture.sniff(timeout=0)
@@ -24,8 +24,11 @@ def capture():
         print('packet')
         print(packet.layers)
         print(packet.frame_info)
+        print(packet.frame_info.field_names)
         print(packet.length)
-        # packet.pretty_print()
+        print(packet.frame_info.time)
+        start_time = datetime.datetime.strptime(packet.frame_info.time, '%m %d, %Y %H:%M:%S.%f %Z')
+        # packet.pretty_print()             %Y-%m-%d %H:%M:%S.%f
 
 
 class my_thread(Thread):
@@ -97,10 +100,19 @@ def test_threads():
         print(thread.name)
 
 
-if __name__ == '__main__':
-    # capture()
-    arr = ['Dog', 'Cat', 'Bird', 'Fish']
+def test_datetime():
+    date_str = 'Jun 14, 2022 18:06:49.954406844 CDT'
+    dat = date_str.split(' ')
+    print(dat)
+    date_str = dat[0] + ' ' + dat[1] + ' ' + dat[2] + ' ' + dat[3][:-3] + ' ' +  dat[4]
+    print(date_str)
+    # convert Jun 14, 2022 18:06:49.954406844 CDT to datetime object
+    #date_obj = datetime.datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %z')
+    start_time = datetime.datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %Z')
+    print(start_time)
+    #print(date_obj)
 
-    if 'Monkey' in arr and 'Camel' in arr:
-        print('Chirp')
-    print(arr)
+if __name__ == '__main__':
+    #capture()
+    test_datetime()
+

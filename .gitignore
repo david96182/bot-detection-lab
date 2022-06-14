@@ -2,3 +2,4 @@
 .idea/
 maintest.py
 capture.pcap
+flow_analysis.bitnetflow
