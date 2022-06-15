@@ -1,3 +1,5 @@
+import time
+
 from packet import FlowAnalysis
 from settings import logger as logging
 import multiprocessing as mp
@@ -67,14 +69,18 @@ class Capture:
         for packet in capture.sniff_continuously():
             print(packet)
             key, inv_key = get_flow_id(packet)
-            if key not in self.flow_ids or inv_key not in self.flow_ids:
+            if key in self.flow_ids or inv_key in self.flow_ids:
+                logging.error('Key or Inv_key exists %s', key)
+            else:
                 self.flow_ids.append(key)
                 worker = FlowAnalysis(key, packet)
-
+                print(mp.active_children())
                 worker.start()
-
-            else:
-                logging.error('Key or Inv_key exists %s', key)
+                print(mp.active_children())
+                child = mp.active_children()[0]
+                child.flow_analysis(packet)
+                time.sleep(20)
+                print(mp.active_children())
 
     def stop(self):
         """

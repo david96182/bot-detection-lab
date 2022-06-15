@@ -1,5 +1,8 @@
 import datetime
-
+import signal
+import sys
+from multiprocessing import Process
+import multiprocessing as mp
 from pyshark import LiveCapture
 
 from settings import logger as logging
@@ -12,7 +15,6 @@ import pyshark.tshark.tshark
 
 
 def capture():
-
     out_file = 'capture.pcap'
     interface = 'wlp1s0'
     logging.error('Starting capture on interface: %s' % interface)
@@ -104,15 +106,102 @@ def test_datetime():
     date_str = 'Jun 14, 2022 18:06:49.954406844 CDT'
     dat = date_str.split(' ')
     print(dat)
-    date_str = dat[0] + ' ' + dat[1] + ' ' + dat[2] + ' ' + dat[3][:-3] + ' ' +  dat[4]
+    date_str = dat[0] + ' ' + dat[1] + ' ' + dat[2] + ' ' + dat[3][:-3] + ' ' + dat[4]
     print(date_str)
     # convert Jun 14, 2022 18:06:49.954406844 CDT to datetime object
-    #date_obj = datetime.datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %z')
+    # date_obj = datetime.datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %z')
     start_time = datetime.datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %Z')
     print(start_time)
-    #print(date_obj)
+    # print(date_obj)
+
+
+def test_mp_file():
+    def task():
+        with open('log.txt', 'a') as f:
+            f.write(f'{datetime.datetime.now()}running thread {threading.current_thread().name}\n')
+        print('Worker closing down')
+
+    # create and configure a new process
+    process = Process(target=task)
+    process2 = Process(target=task)
+    process3 = Process(target=task)
+    # start the new process
+    process.start()
+    process2.start()
+    process3.start()
+    # wait for the new process to finish
+    process.join()
+    process2.join()
+    process3.join()
+
+
+def test_andor():
+    keys = ['12', '1234', '12345', '123456']
+    key1 = '1'
+    key2 = '12346'
+    if key1 in keys or key2 in keys:
+        print('key in keys')
+    else:
+        print('key not in keys')
+
+
+class TimeoutProcess(Process):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wait_time = 15
+        self.status = 'init'
+        self.numbers = ['1']
+
+    def run(self):
+        self.status = 'Running'
+        self.timeout()
+
+    def timeout(self):
+        self.status = 'Timeout'
+        continue_flag = True
+        try:
+            while continue_flag and self.wait_time >= 0:
+                time.sleep(1)
+                self.wait_time = self.wait_time - 1
+                print(self.wait_time, flush=True)
+                print(self.numbers, self.wait_time, self.status, flush=True)
+                if self.status != 'Timeout':
+                    print('interrupting the timeout')
+                    continue_flag = False
+                    break
+        except Exception as e:
+            logging.error(e)
+        print('timeout HERE')
+        if self.wait_time == 0:
+            self.status = 'Finished'
+            print('Process finished', flush=True)
+            pass
+
+    def interrupt_handler(self, number):
+        self.status = 'Running'
+        # kill running timeout
+        self.numbers.append(number)
+        signal.signal(signal.SIGQUIT, self.timeout)
+        print('interrupting the timeout')
+        self.wait_time = 15
+        print('interrupting handler')
+        print(self.wait_time, flush=True)
+
+
+def test_timeout_process():
+    # create and configure a new process
+    process = TimeoutProcess()
+    # start the new process
+    process.start()
+    time.sleep(10)
+    print(mp.active_children())
+    process.interrupt_handler(5)
+    print(mp.active_children())
+
 
 if __name__ == '__main__':
-    #capture()
-    test_datetime()
-
+    # capture()
+    # test_datetime()
+    # test_mp_file()
+    # test_andor()
+    test_timeout_process()

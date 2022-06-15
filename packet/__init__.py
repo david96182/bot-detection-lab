@@ -57,12 +57,15 @@ stateDict = {'': 1, 'FSR_SA': 30, '_FSA': 296, 'FSRPA_FSA': 77, 'SPA_SA': 31, 'F
              'SR_SA': 3119, 'FRPA_FA': 1, 'PA_FRPA': 13, 'S_R': 34, 'FSPAEC_FSPAE': 3, 'S_RA': 61105, 'FSPA_FSA': 5326,
              '_SA': 20, 'SA_FSPA': 15, 'SRPAC_SPA': 8, 'FPA_PA': 19, 'FSRPAE_FSA': 1, 'S_A': 1, 'RPA_RPA': 3,
              'NRS': 6, 'RSP': 115, 'SPA_FSRPA': 1144, 'FSRPAC_FSPA': 139}
+INTERVAL = 180
 
 
 class FlowAnalysis(Process):
     def __init__(self, name, packet):
         super().__init__(name=name)
         self.pkt_list = [packet]
+        self.wait_time = INTERVAL
+        self.status = 'Init'
 
         date_str = packet.frame_info.time
         date_spl = date_str.split(' ')
@@ -115,9 +118,31 @@ class FlowAnalysis(Process):
         # print(self.packet.pretty_print())
         # print(f'name: {self.name}')
         # time.sleep(5000)
-        self.save_to_file()
+        # self.save_to_file()
+        self.status = 'Running'
+        self.timeout()
+
+    def timeout(self):
+        self.status = 'Timeout'
+        continue_flag = True
+        try:
+            while continue_flag and self.wait_time >= 0:
+                time.sleep(1)
+                self.wait_time = self.wait_time - 1
+                if self.status != 'Timeout':
+                    continue_flag = False
+        except Exception as e:
+            logging.error(e)
+        if self.wait_time == 0:
+            self.status = 'Finished'
+            pass
+
+    def interrupt_handler(self, packet):
+        self.status = 'Running'
+        self.wait_time = 0
 
     def flow_analysis(self, packet):
+        logging.info(f'#####$$$$$$$$$$$$$$$$%%%%%%%%%%%%%%############$$$$$$$$$$$$$$$$%%%%%%%%%%%%%%%{self.name}')
         pass
 
     def handle_incoming_packet(self, packet):
@@ -134,7 +159,7 @@ class FlowAnalysis(Process):
             self.kill()
 
     def save_to_file(self):
-        with open('../flow_analysis.bitnetflow', 'a') as f:
+        with open('flow_analysis.bitnetflow', 'a') as f:
             try:
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'
                         f'{self.dst_adr},{self.dst_port},{self.state},{self.s_tos},{self.d_tos},{self.tot_pkts},'
