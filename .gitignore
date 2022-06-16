@@ -1,5 +1,5 @@
 *.pcap
 .idea/
-maintest.py
+*__pycache__/
 capture.pcap
 flow_analysis.bitnetflow
