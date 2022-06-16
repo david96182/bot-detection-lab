@@ -2,6 +2,8 @@ import time
 from datetime import datetime
 from multiprocessing import Process
 import multiprocessing as mp
+from threading import Thread
+
 import pyshark
 from settings import logger as logging
 
@@ -60,7 +62,7 @@ stateDict = {'': 1, 'FSR_SA': 30, '_FSA': 296, 'FSRPA_FSA': 77, 'SPA_SA': 31, 'F
 INTERVAL = 180
 
 
-class FlowAnalysis(Process):
+class FlowAnalysis(Thread):
     def __init__(self, name, packet):
         super().__init__(name=name)
         self.pkt_list = [packet]
@@ -120,7 +122,8 @@ class FlowAnalysis(Process):
         # time.sleep(5000)
         # self.save_to_file()
         self.status = 'Running'
-        self.timeout()
+        self.save_to_file()
+        #self.timeout()
 
     def timeout(self):
         self.status = 'Timeout'

@@ -74,13 +74,13 @@ class Capture:
             else:
                 self.flow_ids.append(key)
                 worker = FlowAnalysis(key, packet)
-                print(mp.active_children())
+                #print(mp.active_children())
                 worker.start()
-                print(mp.active_children())
-                child = mp.active_children()[0]
-                child.flow_analysis(packet)
-                time.sleep(20)
-                print(mp.active_children())
+                #print(mp.active_children())
+                #child = mp.active_children()[0]
+                #child.flow_analysis(packet)
+                #time.sleep(20)
+                #print(mp.active_children())
 
     def stop(self):
         """

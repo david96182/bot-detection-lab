@@ -1,4 +1,6 @@
 import datetime
+import os
+import queue
 import signal
 import sys
 from multiprocessing import Process
@@ -148,9 +150,57 @@ def test_andor():
 class TimeoutProcess(Process):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.wait_time = 15
+        self.wait_time = 70
         self.status = 'init'
         self.numbers = ['1']
+        self.continue_flag = False
+
+    def run(self):
+        print('from run function', mp.current_process())
+        self.status = 'Running'
+        self.timeout()
+
+    def timeout(self):
+        self.status = 'Timeout'
+        self.continue_flag = True
+        try:
+            while self.continue_flag and self.wait_time >= 0:
+                time.sleep(1)
+                self.wait_time = self.wait_time - 1
+                print(self.numbers, self.wait_time, self.status, mp.current_process(), flush=True)
+                if self.status != 'Timeout':
+                    print('interrupting the timeout')
+                    continue_flag = False
+                    break
+        except Exception as e:
+            logging.error(e)
+        print('timeout HERE')
+        if self.wait_time == 0:
+            self.status = 'Finished'
+            print('Process finished', flush=True)
+            pass
+
+    def interrupt_handler(self):
+        self.status = 'Running'
+        self.wait_time = 0
+        self.continue_flag = False
+        self.run()
+        print(mp.current_process(), 'interrupting the process', flush=True)
+        # kill parent process
+        os.kill(os.getpid(), signal.SIGINT)
+        # kill running timeout
+        print('interrupting handler')
+        print('timeout:' , self.wait_time, flush=True)
+        #self.timeout()
+
+
+class TimeoutProcessLock(Process):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wait_time = 70
+        self.status = 'init'
+        self.numbers = ['1']
+        self.lock = mp.Lock()
 
     def run(self):
         self.status = 'Running'
@@ -158,12 +208,12 @@ class TimeoutProcess(Process):
 
     def timeout(self):
         self.status = 'Timeout'
-        continue_flag = True
+        continue_flag = False#True
+        self.lock.acquire(block=True, timeout=1)
         try:
             while continue_flag and self.wait_time >= 0:
                 time.sleep(1)
                 self.wait_time = self.wait_time - 1
-                print(self.wait_time, flush=True)
                 print(self.numbers, self.wait_time, self.status, flush=True)
                 if self.status != 'Timeout':
                     print('interrupting the timeout')
@@ -177,15 +227,13 @@ class TimeoutProcess(Process):
             print('Process finished', flush=True)
             pass
 
-    def interrupt_handler(self, number):
+    def interrupt_handler(self):
         self.status = 'Running'
-        # kill running timeout
-        self.numbers.append(number)
-        signal.signal(signal.SIGQUIT, self.timeout)
-        print('interrupting the timeout')
         self.wait_time = 15
+        # kill running timeout
         print('interrupting handler')
-        print(self.wait_time, flush=True)
+        print('timeout:', self.wait_time, flush=True)
+        self.timeout()
 
 
 def test_timeout_process():
@@ -193,15 +241,80 @@ def test_timeout_process():
     process = TimeoutProcess()
     # start the new process
     process.start()
-    time.sleep(10)
-    print(mp.active_children())
-    process.interrupt_handler(5)
-    print(mp.active_children())
+    time.sleep(5)
+    print(mp.active_children(),flush=True)
+    time.sleep(5)
+    process.interrupt_handler()
+    print(mp.active_children(), flush=True)
 
+
+def test_timeout_process_lock():
+    process = TimeoutProcessLock()
+    process.start()
+    time.sleep(5)
+    print(mp.active_children(), flush=True)
+    time.sleep(5)
+
+
+class TestThread(threading.Thread):
+    def __init__(self,name, loop_time=1.0/60):
+        super().__init__(name=name)
+        self.status = 'init'
+        self.q = queue.Queue()
+        self.timeout = loop_time
+        self.wait_time = 50
+        self.continue_flag = True
+
+    def onThread(self, function, *args, **kwargs):
+        print('onThread', threading.current_thread())
+        self.q.put((function, args, kwargs))
+
+    def run(self):
+        while self.continue_flag:
+            try:
+                function, args, kwargs = self.q.get(timeout=self.timeout)
+                function(*args, **kwargs)
+                print('run', threading.current_thread())
+            except queue.Empty:
+                self.idle()
+
+    def idle(self):
+    #put the code you would have put in the `run` loop here
+        pass
+
+    def do_smtg(self):
+        print('do_smtg',threading.current_thread())
+        time.sleep(5)
+        self.time_out()
+
+    def time_out(self):
+        print('time_out',threading.current_thread())
+        try:
+            while self.wait_time >= 0:
+                time.sleep(1)
+                self.wait_time = self.wait_time - 1
+                print(self.wait_time, self.status, flush=True)
+                if self.q.empty():
+                    print('interrupting the timeout')
+                    break
+        except Exception as e:
+            logging.error(e)
+        self.continue_flag = False
+
+def test_threads():
+    thread = TestThread('asd')
+    thread.start()
+    print(threading.current_thread())
+    thread.onThread(thread.do_smtg)
+    time.sleep(5)
+    thread.onThread(thread.do_smtg())
+    print('MAIN', threading.current_thread())
 
 if __name__ == '__main__':
     # capture()
     # test_datetime()
     # test_mp_file()
     # test_andor()
-    test_timeout_process()
+    #test_timeout_process()
+    #test_timeout_process_lock()
+    test_threads()
