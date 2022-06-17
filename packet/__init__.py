@@ -1,3 +1,5 @@
+import queue
+import threading
 import time
 from datetime import datetime
 from multiprocessing import Process
@@ -63,11 +65,13 @@ INTERVAL = 180
 
 
 class FlowAnalysis(Thread):
-    def __init__(self, name, packet):
+    def __init__(self, name, packet, loop_time=1.0 / 60):
         super().__init__(name=name)
         self.pkt_list = [packet]
+        self.q = queue.Queue()
+        self.timeout = loop_time
         self.wait_time = INTERVAL
-        self.status = 'Init'
+        self.continue_flag = True
 
         date_str = packet.frame_info.time
         date_spl = date_str.split(' ')
@@ -116,37 +120,27 @@ class FlowAnalysis(Thread):
         self.tot_bytes = packet.length
         self.src_bytes = packet.length
 
-    def run(self):
-        # print(self.packet.pretty_print())
-        # print(f'name: {self.name}')
-        # time.sleep(5000)
-        # self.save_to_file()
-        self.status = 'Running'
-        self.save_to_file()
-        #self.timeout()
+    def on_thread(self, function, *args, **kwargs):
+        self.q.put((function, args, kwargs))
 
-    def timeout(self):
-        self.status = 'Timeout'
-        continue_flag = True
-        try:
-            while continue_flag and self.wait_time >= 0:
-                time.sleep(1)
-                self.wait_time = self.wait_time - 1
-                if self.status != 'Timeout':
-                    continue_flag = False
-        except Exception as e:
-            logging.error(e)
-        if self.wait_time == 0:
-            self.status = 'Finished'
-            pass
+    def run(self):
+        while self.continue_flag and self.wait_time > 0:
+            print(self.wait_time)
+            time.sleep(1)
+            self.wait_time = self.wait_time - 1
+            try:
+                function, args, kwargs = self.q.get(timeout=self.timeout)
+                function(*args, **kwargs)
+                print('run', threading.current_thread())
+                self.wait_time = INTERVAL
+            except queue.Empty:
+                self.idle()
+
+    def idle(self):
+        pass
 
     def interrupt_handler(self, packet):
-        self.status = 'Running'
         self.wait_time = 0
-
-    def flow_analysis(self, packet):
-        logging.info(f'#####$$$$$$$$$$$$$$$$%%%%%%%%%%%%%%############$$$$$$$$$$$$$$$$%%%%%%%%%%%%%%%{self.name}')
-        pass
 
     def handle_incoming_packet(self, packet):
         self.pkt_list.append(packet)

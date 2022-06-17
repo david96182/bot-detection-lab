@@ -18,7 +18,7 @@ import pyshark.tshark.tshark
 
 def capture():
     out_file = 'capture.pcap'
-    interface = 'wlp1s0'
+    interface = 'br-518ff7874c35'
     logging.error('Starting capture on interface: %s' % interface)
     # check if interface is correct
 
@@ -26,12 +26,13 @@ def capture():
     capture.sniff(timeout=0)
     for packet in capture.sniff_continuously():
         print('packet')
-        print(packet.layers)
-        print(packet.frame_info)
-        print(packet.frame_info.field_names)
-        print(packet.length)
-        print(packet.frame_info.time)
-        start_time = datetime.datetime.strptime(packet.frame_info.time, '%m %d, %Y %H:%M:%S.%f %Z')
+        print(packet)
+        #print(packet.layers)
+        #print(packet.frame_info)
+        #print(packet.frame_info.field_names)
+        #print(packet.length)
+        #print(packet.frame_info.time)
+        #start_time = datetime.datetime.strptime(packet.frame_info.time, '%m %d, %Y %H:%M:%S.%f %Z')
         # packet.pretty_print()             %Y-%m-%d %H:%M:%S.%f
 
 
@@ -270,11 +271,15 @@ class TestThread(threading.Thread):
         self.q.put((function, args, kwargs))
 
     def run(self):
-        while self.continue_flag:
+        while self.continue_flag and self.wait_time > 0:
+            print(self.wait_time)
+            time.sleep(1)
+            self.wait_time = self.wait_time - 1
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
                 function(*args, **kwargs)
                 print('run', threading.current_thread())
+                self.wait_time = 50
             except queue.Empty:
                 self.idle()
 
@@ -284,8 +289,8 @@ class TestThread(threading.Thread):
 
     def do_smtg(self):
         print('do_smtg',threading.current_thread())
-        time.sleep(5)
-        self.time_out()
+        #time.sleep(5)
+        #self.time_out()
 
     def time_out(self):
         print('time_out',threading.current_thread())
@@ -301,20 +306,85 @@ class TestThread(threading.Thread):
             logging.error(e)
         self.continue_flag = False
 
+    def aqui(self):
+        print('aqui',threading.current_thread(), flush=True)
+
 def test_threads():
-    thread = TestThread('asd')
+    name = 'test_thread'
+    thread = TestThread(name)
     thread.start()
     print(threading.current_thread())
     thread.onThread(thread.do_smtg)
+    thread2 = TestThread('test_thread2')
+    thread2.start()
+
     time.sleep(5)
-    thread.onThread(thread.do_smtg())
+    thread.onThread(thread.do_smtg)
     print('MAIN', threading.current_thread())
+    threadss = filter(lambda x: x.name == name, threading.enumerate())
+    thread1 = list(threadss)[0]
+    print('EL THREAD 11111111111111:', thread1)
+    thread1.onThread(thread1.aqui)
+
+
+class TestProcess(Process):
+    def __init__(self,name, loop_time=1.0/60):
+        super().__init__(name=name)
+        self.status = 'init'
+        self.q = queue.Queue()
+        self.timeout = loop_time
+        self.wait_time = 50
+        self.continue_flag = True
+
+    def onProc(self, function, *args, **kwargs):
+        print('onThread', mp.current_process())
+        self.q.put((function, args, kwargs))
+
+    def run(self):
+        while self.continue_flag and self.wait_time > 0:
+            print(self.wait_time)
+            time.sleep(1)
+            self.wait_time = self.wait_time - 1
+            try:
+                function, args, kwargs = self.q.get(timeout=self.timeout)
+                function(*args, **kwargs)
+                print('run', mp.current_process())
+                self.wait_time = 50
+            except queue.Empty:
+                self.idle()
+
+    def idle(self):
+    #put the code you would have put in the `run` loop here
+        pass
+
+    def do_smtg(self):
+        print('do_smtg',mp.current_process())
+        time.sleep(5)
+
+    def aqui(self):
+        print('aqui',mp.current_process(), flush=True)
+
+def test_process():
+    name = 'test_proc'
+    proc = TestProcess(name)
+    proc.start()
+    print(mp.current_process())
+    proc.onProc(proc.do_smtg)
+    time.sleep(5)
+    proc.onProc(proc.do_smtg)
+    print('MAIN', mp.current_process())
+    procss = filter(lambda x: x.name == name, mp.active_children())
+    proc1 = list(procss)[0]
+    print('EL THREAD 11111111111111:', proc1)
+    proc1.onProc(proc1.aqui)
+
 
 if __name__ == '__main__':
-    # capture()
+    #capture()
     # test_datetime()
     # test_mp_file()
     # test_andor()
     #test_timeout_process()
     #test_timeout_process_lock()
     test_threads()
+    #test_process()
