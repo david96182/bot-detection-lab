@@ -7,3 +7,9 @@ def get_thread_by_name(thread_name):
     thread = list(threads)[0]
 
     return thread
+
+
+def get_threads_names():
+    threads = threading.enumerate()
+    threads_names = [t.name for t in threads]
+    return threads_names

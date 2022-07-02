@@ -61,7 +61,7 @@ stateDict = {'': 1, 'FSR_SA': 30, '_FSA': 296, 'FSRPA_FSA': 77, 'SPA_SA': 31, 'F
              'SR_SA': 3119, 'FRPA_FA': 1, 'PA_FRPA': 13, 'S_R': 34, 'FSPAEC_FSPAE': 3, 'S_RA': 61105, 'FSPA_FSA': 5326,
              '_SA': 20, 'SA_FSPA': 15, 'SRPAC_SPA': 8, 'FPA_PA': 19, 'FSRPAE_FSA': 1, 'S_A': 1, 'RPA_RPA': 3,
              'NRS': 6, 'RSP': 115, 'SPA_FSRPA': 1144, 'FSRPAC_FSPA': 139}
-INTERVAL = 180
+INTERVAL = 15
 
 
 class FlowAnalysis(Thread):
@@ -75,6 +75,8 @@ class FlowAnalysis(Thread):
 
         date_str = packet.frame_info.time
         date_spl = date_str.split(' ')
+        if '' in date_spl:
+            date_spl.remove('')
         date_str = date_spl[0] + ' ' + date_spl[1] + ' ' + date_spl[2] + ' ' + date_spl[3][:-3] + ' ' + date_spl[4]
         self.start_time = datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %Z')
 
@@ -119,22 +121,23 @@ class FlowAnalysis(Thread):
         self.tot_pkts = 1
         self.tot_bytes = packet.length
         self.src_bytes = packet.length
+        logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
 
     def on_thread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
 
     def run(self):
         while self.continue_flag and self.wait_time > 0:
-            print(self.wait_time)
             time.sleep(1)
             self.wait_time = self.wait_time - 1
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
                 function(*args, **kwargs)
-                print('run', threading.current_thread())
+                #print('run', threading.current_thread(), flush=True)
                 self.wait_time = INTERVAL
             except queue.Empty:
                 self.idle()
+        self.save_to_file()
 
     def idle(self):
         pass
@@ -145,15 +148,33 @@ class FlowAnalysis(Thread):
     def handle_incoming_packet(self, packet):
         self.pkt_list.append(packet)
 
+        date_str = packet.frame_info.time
+        date_spl = date_str.split(' ')
+        if '' in date_spl:
+            date_spl.remove('')
+        date_str = date_spl[0] + ' ' + date_spl[1] + ' ' + date_spl[2] + ' ' + date_spl[3][:-3] + ' ' + date_spl[4]
+        inc_time = datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %Z')
+        self.duration = (inc_time - self.start_time).total_seconds()
+
+        self.tot_pkts += 1
+        self.tot_bytes += packet.length
+
         # check if packet ip src is self.src_adr
-        # total bytes = total bytes + packet length
-        # total packets = total packets + 1
-        # src bytes = src bytes + packet length
+        if self.protocol == 'ARP':
+            if self.src_adr == packet.arp.src_proto_ipv4:
+                self.src_bytes += packet.length
+        elif 'IP' in packet:
+            if self.src_adr == packet.ip.src:
+                self.src_bytes += packet.length
+        elif 'IPv6' in packet:
+            if self.src_adr == packet.ipv6.src:
+                self.src_bytes += packet.length
 
         terminate = False
         if terminate:
             self.save_to_file(packet)
             self.kill()
+        logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
 
     def save_to_file(self):
         with open('flow_analysis.bitnetflow', 'a') as f:
@@ -161,12 +182,19 @@ class FlowAnalysis(Thread):
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'
                         f'{self.dst_adr},{self.dst_port},{self.state},{self.s_tos},{self.d_tos},{self.tot_pkts},'
                         f'{self.tot_bytes},{self.src_bytes}\n')
+                logging.info('Saving to file flow with id: %s', self.name)
             except Exception as e:
                 logging.error('Error writing to file: ' + str(e))
 
+    def calculate_network_state(self):
+        pass
+
+"""
     def __str__(self):
         return f'{self.name: }' + str(self.start_time) + ',' + str(self.duration) + ',' + str(self.protocol) + ',' + \
                str(self.src_adr) + ',' + str(self.src_port) + ',' + str(self.dst_adr) + ',' + \
                str(self.dst_port) + ',' + str(self.state) + ',' + str(self.s_tos) + ',' + \
                str(self.d_tos) + ',' + str(self.tot_pkts) + ',' + str(self.tot_bytes) + ',' + \
                str(self.src_bytes) + '\n'
+"""
+

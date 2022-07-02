@@ -18,7 +18,7 @@ import pyshark.tshark.tshark
 
 def capture():
     out_file = 'capture.pcap'
-    interface = 'br-518ff7874c35'
+    interface = 'wlp1s0'
     logging.error('Starting capture on interface: %s' % interface)
     # check if interface is correct
 
@@ -106,8 +106,10 @@ def test_threads():
 
 
 def test_datetime():
-    date_str = 'Jun 14, 2022 18:06:49.954406844 CDT'
+    date_str = 'Jul  1, 2022 10:01:16.783730974 CDT'  #    Jun 14, 2022 18:06:49.954406844 CDT
     dat = date_str.split(' ')
+    if '' in dat:
+        dat.remove('')
     print(dat)
     date_str = dat[0] + ' ' + dat[1] + ' ' + dat[2] + ' ' + dat[3][:-3] + ' ' + dat[4]
     print(date_str)
@@ -282,6 +284,7 @@ class TestThread(threading.Thread):
                 self.wait_time = 50
             except queue.Empty:
                 self.idle()
+        self.se_acabo()
 
     def idle(self):
     #put the code you would have put in the `run` loop here
@@ -309,6 +312,10 @@ class TestThread(threading.Thread):
     def aqui(self):
         print('aqui',threading.current_thread(), flush=True)
 
+    def se_acabo(self):
+        print('finitooooooo')
+
+
 def test_threads():
     name = 'test_thread'
     thread = TestThread(name)
@@ -317,6 +324,10 @@ def test_threads():
     thread.onThread(thread.do_smtg)
     thread2 = TestThread('test_thread2')
     thread2.start()
+
+    threads = threading.enumerate()
+    threads_names = [t.name for t in threads]
+    print(threads_names)
 
     time.sleep(5)
     thread.onThread(thread.do_smtg)
@@ -381,10 +392,10 @@ def test_process():
 
 if __name__ == '__main__':
     #capture()
-    # test_datetime()
+    test_datetime()
     # test_mp_file()
     # test_andor()
     #test_timeout_process()
     #test_timeout_process_lock()
-    test_threads()
+    #test_threads()
     #test_process()

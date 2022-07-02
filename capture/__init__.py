@@ -1,9 +1,11 @@
+import threading
 import time
 
 from packet import FlowAnalysis
 from settings import logger as logging
 import multiprocessing as mp
 from pyshark import LiveCapture
+import utils
 
 
 def get_flow_id(packet):
@@ -46,7 +48,6 @@ def get_flow_id(packet):
         logging.error(packet)
         logging.error(packet.ip.src)
 
-    logging.info(f'################ KEYS: {key, inv_key}')
     return key, inv_key
 
 
@@ -57,7 +58,6 @@ class Capture:
     def __init__(self, interface, output):
         self.interface = interface
         self.out_file = output
-        self.flow_ids = []
 
     def start(self):
         """
@@ -67,20 +67,23 @@ class Capture:
         capture.sniff(timeout=0)
         logging.info('Starting capture on interface %s', self.interface)
         for packet in capture.sniff_continuously():
-            print(packet)
+            if 'Mysql' not in packet:
+                #print(packet)
+                pass
+            #print(threading.enumerate())
             key, inv_key = get_flow_id(packet)
-            if key in self.flow_ids or inv_key in self.flow_ids:
-                logging.error('Key or Inv_key exists %s', key)
+            if key in utils.get_threads_names() or inv_key in utils.get_threads_names():
+                if inv_key in utils.get_threads_names():
+                    key = inv_key
+                logging.info(f'Captured packet with id: {key}')
+                thread = utils.get_thread_by_name(key)
+                thread.on_thread(thread.handle_incoming_packet, packet)
             else:
-                self.flow_ids.append(key)
-                worker = FlowAnalysis(key, packet)
-                #print(mp.active_children())
-                worker.start()
-                #print(mp.active_children())
-                #child = mp.active_children()[0]
-                #child.flow_analysis(packet)
-                #time.sleep(20)
-                #print(mp.active_children())
+                logging.info(f'Captured packet with id: {key}')
+                if 'Mysql' not in packet:
+                    thread = FlowAnalysis(key, packet)
+                    thread.start()
+            time.sleep(5)
 
     def stop(self):
         """
