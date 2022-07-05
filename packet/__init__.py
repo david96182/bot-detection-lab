@@ -115,9 +115,11 @@ class FlowAnalysis(Thread):
         self.d_tos = ''
 
         self.tot_pkts = 1
-        self.tot_bytes = packet.length
-        self.src_bytes = packet.length
+        self.tot_bytes = int(packet.length)
+        self.src_bytes = int(packet.length)
         logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
+
+        self.bytess = [packet.length]
 
     def on_thread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
@@ -148,22 +150,24 @@ class FlowAnalysis(Thread):
         self.duration = (inc_time - self.start_time).total_seconds()
 
         self.tot_pkts += 1
-        self.tot_bytes += packet.length
+        self.tot_bytes += int(packet.length)
+
+        self.bytess.append(packet.length)
 
         # check if packet ip src is self.src_adr
         if self.protocol == 'ARP':
             if self.src_adr == packet.arp.src_proto_ipv4:
-                self.src_bytes += packet.length
+                self.src_bytes += int(packet.length)
         elif 'IP' in packet:
             if self.src_adr == packet.ip.src:
-                self.src_bytes += packet.length
+                self.src_bytes += int(packet.length)
         elif 'IPv6' in packet:
             if self.src_adr == packet.ipv6.src:
-                self.src_bytes += packet.length
+                self.src_bytes += int(packet.length)
 
         terminate = False
         if terminate:
-            self.save_to_file(packet)
+            self.save_to_file()
             self.kill()
         logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
 
@@ -172,7 +176,7 @@ class FlowAnalysis(Thread):
             try:
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'
                         f'{self.dst_adr},{self.dst_port},{self.state},{self.s_tos},{self.d_tos},{self.tot_pkts},'
-                        f'{self.tot_bytes},{self.src_bytes}\n')
+                        f'{self.tot_bytes},{self.src_bytes}\n{self.bytess}\n')
                 logging.info('Saving to file flow with id: %s', self.name)
             except Exception as e:
                 logging.error('Error writing to file: ' + str(e))

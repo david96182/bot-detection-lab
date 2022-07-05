@@ -3,14 +3,13 @@ import config
 from capture import Capture
 from settings import logger as logging
 
-ARGUS_FLOW_STATUS_INTERVAL = 3600
-
 
 def main():
     logging.info('Starting application')
     configuration = config.get_config()
     interface = str(configuration['interface']['network_interface'])
     out_file = str(configuration['pcap']['pcap_file'])
+
     if config.verify_interface(interface):
         capture = Capture(interface, out_file)
         capture.start()

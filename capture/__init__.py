@@ -1,16 +1,12 @@
-import threading
-import time
-
 from packet import FlowAnalysis
 from settings import logger as logging
-import multiprocessing as mp
 from pyshark import LiveCapture
-import utils
+from utils import get_threads_names, get_thread_by_name
 
 
 def get_flow_id(packet):
     """
-    Returns the flow id.
+    Returns the flow id of a network packet.
     """
     pkt_protocol = packet.highest_layer
     if pkt_protocol == 'DATA':
@@ -72,11 +68,11 @@ class Capture:
                 pass
             #print(threading.enumerate())
             key, inv_key = get_flow_id(packet)
-            if key in utils.get_threads_names() or inv_key in utils.get_threads_names():
-                if inv_key in utils.get_threads_names():
+            if key in get_threads_names() or inv_key in get_threads_names():
+                if inv_key in get_threads_names():
                     key = inv_key
                 logging.info(f'Captured packet with id: {key}')
-                thread = utils.get_thread_by_name(key)
+                thread = get_thread_by_name(key)
                 thread.on_thread(thread.handle_incoming_packet, packet)
             else:
                 logging.info(f'Captured packet with id: {key}')
