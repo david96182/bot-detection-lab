@@ -84,9 +84,11 @@ class FlowAnalysis(Thread):
         elif 'IP' in packet:
             self.src_adr = packet.ip.src
             self.dst_adr = packet.ip.dst
+            self.s_tos = packet.ip.dsfield_dscp
         elif 'IPv6' in packet:
             self.src_adr = packet.ipv6.src
             self.dst_adr = packet.ipv6.dst
+            self.s_tos = packet.ip.dsfield_dscp
 
         if 'TCP' in packet:
             self.src_port = packet.tcp.srcport
@@ -99,7 +101,6 @@ class FlowAnalysis(Thread):
             self.dst_port = packet.udp.dstport
 
         self.state = ''
-        self.s_tos = ''
         self.d_tos = ''
 
         self.tot_pkts = 1
@@ -120,7 +121,8 @@ class FlowAnalysis(Thread):
                 self.wait_time = INTERVAL
             except queue.Empty:
                 self.idle()
-        self.save_to_file()
+        if self.continue_flag:
+            self.save_to_file()
 
     def idle(self):
         pass
@@ -131,7 +133,7 @@ class FlowAnalysis(Thread):
     def handle_incoming_packet(self, packet):
         self.pkt_list.append(packet)
 
-        inc_time = self.start_time = get_date_string(packet.frame_info.time)
+        inc_time = get_date_string(packet.frame_info.time)
         self.duration = (inc_time - self.start_time).total_seconds()
 
         self.tot_pkts += 1
@@ -144,15 +146,23 @@ class FlowAnalysis(Thread):
         elif 'IP' in packet:
             if self.src_adr == packet.ip.src:
                 self.src_bytes += int(packet.length)
+                self.s_tos = packet.ip.dsfield_dscp
+            else:
+                self.d_tos = packet.ip.dsfield_dscp
         elif 'IPv6' in packet:
             if self.src_adr == packet.ipv6.src:
                 self.src_bytes += int(packet.length)
+
+        #self.state = self.calculate_network_state(packet)
 
         terminate = False
         if terminate:
             self.save_to_file()
             self.kill()
         logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
+
+    def calculate_network_state(self,packet):
+        pass
 
     def save_to_file(self):
         with open('flow_analysis.bitnetflow', 'a') as f:
@@ -164,8 +174,6 @@ class FlowAnalysis(Thread):
             except Exception as e:
                 logging.error('Error writing to file: ' + str(e))
 
-    def calculate_network_state(self):
-        pass
 
 """
     def __str__(self):
