@@ -1,5 +1,6 @@
 import threading
 from datetime import datetime
+import pyshark.tshark.tshark
 
 
 def get_thread_by_name(thread_name):
@@ -39,3 +40,8 @@ def get_date_string(date_str):
     return date_str
 
 
+def verify_interface(interface):
+    interfaces = pyshark.tshark.tshark.get_tshark_interfaces()
+    if interface in interfaces:
+        return True
+    return False

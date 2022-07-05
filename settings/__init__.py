@@ -1,12 +1,21 @@
 import sys
 import traceback
 import logging.handlers
-import config
+from configparser import ConfigParser
 
-log_name = config.get_config()['log']['log_file']
-log_path = config.get_config()['log']['log_path']
+CONFIG_PATH = './config.ini'
+
+
+def get_config():
+    config = ConfigParser()
+    config.read(CONFIG_PATH)
+    logging.info(f'Reading config file {CONFIG_PATH}')
+    return config
+
+
+log_name = get_config()['log']['log_file']
+log_path = get_config()['log']['log_path']
 full_log_path = str(log_path + '/' + log_name)
-
 
 # log_handler = logging.StreamHandler(sys.stdout)
 log_handler = logging.handlers.WatchedFileHandler(full_log_path)

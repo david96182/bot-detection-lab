@@ -1,16 +1,17 @@
 import sys
-import config
+import settings
 from capture import Capture
 from settings import logger as logging
+from utils import verify_interface
 
 
 def main():
     logging.info('Starting application')
-    configuration = config.get_config()
+    configuration = settings.get_config()
     interface = str(configuration['interface']['network_interface'])
     out_file = str(configuration['pcap']['pcap_file'])
 
-    if config.verify_interface(interface):
+    if verify_interface(interface):
         capture = Capture(interface, out_file)
         capture.start()
     else:

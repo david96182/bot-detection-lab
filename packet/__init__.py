@@ -1,12 +1,6 @@
 import queue
-import threading
 import time
-from datetime import datetime
-from multiprocessing import Process
-import multiprocessing as mp
 from threading import Thread
-
-import pyshark
 from settings import logger as logging
 from utils import get_date_string
 
@@ -17,7 +11,6 @@ Packet Analyzer for the Capture Module
  :Proto
  :SrcAddr
  :Sport
- :Dir
  :DstAddr
  :Dport
  :State
@@ -105,11 +98,6 @@ class FlowAnalysis(Thread):
             self.src_port = packet.udp.srcport
             self.dst_port = packet.udp.dstport
 
-        # self.src_adr = None
-        # self.src_port = None
-        # self.dst_adr = None
-        # self.dst_port = None
-
         self.state = ''
         self.s_tos = ''
         self.d_tos = ''
@@ -118,8 +106,6 @@ class FlowAnalysis(Thread):
         self.tot_bytes = int(packet.length)
         self.src_bytes = int(packet.length)
         logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
-
-        self.bytess = [packet.length]
 
     def on_thread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
@@ -131,7 +117,6 @@ class FlowAnalysis(Thread):
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
                 function(*args, **kwargs)
-                #print('run', threading.current_thread(), flush=True)
                 self.wait_time = INTERVAL
             except queue.Empty:
                 self.idle()
@@ -151,8 +136,6 @@ class FlowAnalysis(Thread):
 
         self.tot_pkts += 1
         self.tot_bytes += int(packet.length)
-
-        self.bytess.append(packet.length)
 
         # check if packet ip src is self.src_adr
         if self.protocol == 'ARP':
@@ -176,7 +159,7 @@ class FlowAnalysis(Thread):
             try:
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'
                         f'{self.dst_adr},{self.dst_port},{self.state},{self.s_tos},{self.d_tos},{self.tot_pkts},'
-                        f'{self.tot_bytes},{self.src_bytes}\n{self.bytess}\n')
+                        f'{self.tot_bytes},{self.src_bytes}\n')
                 logging.info('Saving to file flow with id: %s', self.name)
             except Exception as e:
                 logging.error('Error writing to file: ' + str(e))
