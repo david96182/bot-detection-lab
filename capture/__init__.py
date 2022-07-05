@@ -83,7 +83,6 @@ class Capture:
                 if 'Mysql' not in packet:
                     thread = FlowAnalysis(key, packet)
                     thread.start()
-            time.sleep(5)
 
     def stop(self):
         """

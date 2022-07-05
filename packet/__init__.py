@@ -8,6 +8,7 @@ from threading import Thread
 
 import pyshark
 from settings import logger as logging
+from utils import get_date_string
 
 """
 Packet Analyzer for the Capture Module
@@ -73,12 +74,7 @@ class FlowAnalysis(Thread):
         self.wait_time = INTERVAL
         self.continue_flag = True
 
-        date_str = packet.frame_info.time
-        date_spl = date_str.split(' ')
-        if '' in date_spl:
-            date_spl.remove('')
-        date_str = date_spl[0] + ' ' + date_spl[1] + ' ' + date_spl[2] + ' ' + date_spl[3][:-3] + ' ' + date_spl[4]
-        self.start_time = datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %Z')
+        self.start_time = get_date_string(packet.frame_info.time)
 
         self.duration = 0
 
@@ -148,12 +144,7 @@ class FlowAnalysis(Thread):
     def handle_incoming_packet(self, packet):
         self.pkt_list.append(packet)
 
-        date_str = packet.frame_info.time
-        date_spl = date_str.split(' ')
-        if '' in date_spl:
-            date_spl.remove('')
-        date_str = date_spl[0] + ' ' + date_spl[1] + ' ' + date_spl[2] + ' ' + date_spl[3][:-3] + ' ' + date_spl[4]
-        inc_time = datetime.strptime(date_str, '%b %d, %Y %H:%M:%S.%f %Z')
+        inc_time = self.start_time = get_date_string(packet.frame_info.time)
         self.duration = (inc_time - self.start_time).total_seconds()
 
         self.tot_pkts += 1
