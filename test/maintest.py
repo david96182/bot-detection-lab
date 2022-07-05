@@ -17,7 +17,7 @@ import pyshark.tshark.tshark
 
 
 def capture():
-    out_file = 'capture.pcap'
+    out_file = '../capture.pcap'
     interface = 'wlp1s0'
     logging.error('Starting capture on interface: %s' % interface)
     # check if interface is correct
