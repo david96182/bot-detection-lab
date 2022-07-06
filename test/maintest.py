@@ -392,10 +392,31 @@ def test_process():
 
 if __name__ == '__main__':
     #capture()
-    test_datetime()
+    #test_datetime()
     # test_mp_file()
     # test_andor()
     #test_timeout_process()
     #test_timeout_process_lock()
     #test_threads()
     #test_process()
+
+    FLAGS_ORDER = 'FSRPAECU'
+    flags_before = FLAGS_ORDER[:FLAGS_ORDER.index('P')]
+    state_update = ''
+    print(flags_before)
+    #if not flags_before:
+    #    state_update = ''.join(['P', state_update])
+    #
+    index = None
+    for flag in flags_before:
+        if flag in state_update:
+           index = state_update.index(flag)
+    print(index)
+    if index is not None:
+       index += 1
+       state_update = ''.join([state_update[:index], 'P', state_update[index:]])
+    else:
+        state_update = ''.join(['P', state_update])
+    print(state_update)
+    if not 'P' in state_update:
+        print('asd')

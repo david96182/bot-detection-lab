@@ -1,2 +1,1 @@
 StartTime,Dur,Proto,SrcAddr,Sport,DstAddr,Dport,State,sTos,dTos,TotPkts,TotBytes,SrcBytes
-2022-07-05 04:08:12.355473,5.7e-05,TCP,172.22.0.1,34096,172.22.0.3,80,,0,0,3,214,140

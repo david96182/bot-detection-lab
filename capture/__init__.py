@@ -23,8 +23,6 @@ class Capture:
         logging.info('Starting capture on interface %s', self.interface)
 
         for packet in capture.sniff_continuously():
-            if 'Mysql' not in packet:
-                pass
             key, inv_key = get_flow_id(packet)
 
             if key in get_threads_names() or inv_key in get_threads_names():

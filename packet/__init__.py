@@ -56,6 +56,7 @@ stateDict = {'': 1, 'FSR_SA': 30, '_FSA': 296, 'FSRPA_FSA': 77, 'SPA_SA': 31, 'F
              '_SA': 20, 'SA_FSPA': 15, 'SRPAC_SPA': 8, 'FPA_PA': 19, 'FSRPAE_FSA': 1, 'S_A': 1, 'RPA_RPA': 3,
              'NRS': 6, 'RSP': 115, 'SPA_FSRPA': 1144, 'FSRPAC_FSPA': 139}
 INTERVAL = 15
+FLAGS_ORDER = 'FSRPAECU'
 
 
 class FlowAnalysis(Thread):
@@ -88,7 +89,9 @@ class FlowAnalysis(Thread):
         elif 'IPv6' in packet:
             self.src_adr = packet.ipv6.src
             self.dst_adr = packet.ipv6.dst
-            self.s_tos = packet.ip.dsfield_dscp
+            logging.info(f'IPv6 packet: {packet.ipv6.field_names}')
+            logging.info(f'IPv6 packet: {packet.ipv6.tclass}')
+            logging.info(f'IPv6 packet: {packet.ipv6.tclass_dscp}')
 
         if 'TCP' in packet:
             self.src_port = packet.tcp.srcport
@@ -153,16 +156,70 @@ class FlowAnalysis(Thread):
             if self.src_adr == packet.ipv6.src:
                 self.src_bytes += int(packet.length)
 
-        #self.state = self.calculate_network_state(packet)
-
+        self.state = self.calculate_network_state(packet)
         terminate = False
+        if 'F' in self.state or 'R' in self.state:
+            pass
+
+        logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
         if terminate:
             self.save_to_file()
             self.kill()
-        logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
 
-    def calculate_network_state(self,packet):
-        pass
+    def calculate_network_state(self, packet):
+        state = ''
+        if 'UDP' in packet:
+            # ['srcport', 'dstport', 'port', 'length', 'checksum', 'checksum_status', 'stream', '', 'time_relative', 'time_delta', 'payload']
+            self.state = 'CON'
+        if 'TCP' in packet:
+            is_src = False
+            if self.src_adr == packet.ip.src:
+                is_src = True
+            # [flags_res', 'flags_ns', 'flags_cwr' ,'flags_ecn', 'flags_urg', 'flags_ack', 'flags_push', 'flags_reset', 'flags_syn', 'flags_fin', 'flags_str']
+            # LETTERS OF STATES: flags_cwr - C, tcp.flags_ecn - E, tcp.flags_urg - U, tcp.flags_ack - A, flags_push - P
+            #         8          flags_reset - R, flags_syn - S, flags_fin - F
+            # discarted tcp: tcp.flags_res ,tcp.flags_ns,
+            tcp_flags = {'F': packet.tcp.flags_fin, 'S': packet.tcp.flags_syn, 'R': packet.tcp.flags_reset,
+                         'P': packet.tcp.flags_psh, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ecn,
+                         'C': packet.tcp.flags_cwr, 'U': packet.tcp.flags_urg}
+
+            if self.state == '':
+                self.state = '_'
+            state_split = self.state.split('_')
+            if is_src:
+                state_update = state_split[0]
+            else:
+                state_update = state_split[1]
+            # iterate tcp_flags dictionary
+            for key in tcp_flags.keys():
+                if tcp_flags[key] == '1':
+                    if not key in state_update:
+                        if state_update == '':
+                            state_update = key
+                        else:
+                            flags_before = FLAGS_ORDER[:FLAGS_ORDER.index(key)]
+                            index = None
+                            for flag in flags_before:
+                                if flag in state_update:
+                                    index = state_update.index(flag)
+                            if index is not None:
+                                index += 1
+                                state_update = ''.join([state_update[:index], key, state_update[index:]])
+                            else:
+                                state_update = ''.join([key, state_update])
+            if is_src:
+                state = ''.join([state_update,'_',state_split[1]])
+            else:
+                state = ''.join([state_split[0],'_', state_update])
+
+        if self.protocol == 'ARP':
+            if packet.arp.opcode == 1:
+                self.state = 'CON'
+            elif packet.arp.opcode == 2:
+                self.state = 'RSP'
+            else:
+                self.state = 'INT'
+        return state
 
     def save_to_file(self):
         with open('flow_analysis.bitnetflow', 'a') as f:
@@ -183,4 +240,3 @@ class FlowAnalysis(Thread):
                str(self.d_tos) + ',' + str(self.tot_pkts) + ',' + str(self.tot_bytes) + ',' + \
                str(self.src_bytes) + '\n'
 """
-
