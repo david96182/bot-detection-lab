@@ -1,5 +1,6 @@
 *.pcap
 .idea/
 *__pycache__/
-capture.pcap
-*.bitnetflow
+*.pyc
+features-capture/capture.pcap
+features-capture/flow_analysis.bitnetflow

@@ -209,9 +209,9 @@ class FlowAnalysis(Thread):
                             else:
                                 state_update = ''.join([key, state_update])
             if is_src:
-                state = ''.join([state_update,'_',state_split[1]])
+                state = ''.join([state_update, '_', state_split[1]])
             else:
-                state = ''.join([state_split[0],'_', state_update])
+                state = ''.join([state_split[0], '_', state_update])
 
         if self.protocol == 'ARP':
             if packet.arp.opcode == 1:

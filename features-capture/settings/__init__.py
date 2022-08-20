@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 import logging.handlers
@@ -13,6 +14,8 @@ def get_config():
     return config
 
 
+# set directory to settings
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 log_name = get_config()['log']['log_file']
 log_path = get_config()['log']['log_path']
 full_log_path = str(log_path + '/' + log_name)

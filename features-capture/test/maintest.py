@@ -2,7 +2,6 @@ import datetime
 import os
 import queue
 import signal
-import sys
 from multiprocessing import Process
 import multiprocessing as mp
 from pyshark import LiveCapture
@@ -12,8 +11,6 @@ import random
 import threading
 import time
 from threading import Thread
-
-import pyshark.tshark.tshark
 
 
 def capture():
@@ -419,4 +416,4 @@ if __name__ == '__main__':
         state_update = ''.join(['P', state_update])
     print(state_update)
     if not 'P' in state_update:
-        print('asd')
+        print('features-capture')

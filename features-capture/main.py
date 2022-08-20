@@ -1,3 +1,4 @@
+import os
 import sys
 import settings
 from capture import Capture
@@ -11,6 +12,7 @@ def main():
     interface = str(configuration['interface']['network_interface'])
     out_file = str(configuration['pcap']['pcap_file'])
 
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     if verify_interface(interface):
         capture = Capture(interface, out_file)
         capture.start()
