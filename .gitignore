@@ -4,4 +4,3 @@
 *.pyc
 features-capture/capture.pcap
 features-capture/flow_analysis.bitnetflow
-features-capture/test/

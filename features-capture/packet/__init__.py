@@ -57,7 +57,7 @@ stateDict = {'': 1, 'FSR_SA': 30, '_FSA': 296, 'FSRPA_FSA': 77, 'SPA_SA': 31, 'F
              'NRS': 6, 'RSP': 115, 'SPA_FSRPA': 1144, 'FSRPAC_FSPA': 139}
 INTERVAL = 15
 FLAGS_ORDER = 'FSRPAECU'
-
+# scapy order: FSRPAUECN
 
 class FlowAnalysis(Thread):
     def __init__(self, name, packet, loop_time=1.0 / 60):
@@ -106,6 +106,8 @@ class FlowAnalysis(Thread):
         self.state = ''
         self.state = self.calculate_network_state(packet)
         self.d_tos = ''
+        if not hasattr(self, 's_stos'):
+            self.s_tos = ''
 
         self.tot_pkts = 1
         self.tot_bytes = int(packet.length)
