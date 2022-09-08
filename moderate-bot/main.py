@@ -62,7 +62,7 @@ def get_art():
     time.sleep(random.randint(7, 11))
 
 
-def get_disccount():
+def get_discount():
     browser.find_element(By.CLASS_NAME, 'logo').click()
     browser.find_element(By.CLASS_NAME, 'all-product-link').click()
     time.sleep(random.randint(6, 13))
@@ -78,7 +78,7 @@ def login():
 
 if __name__ == '__main__':
     firefox_options = webdriver.FirefoxOptions()
-    firefox_options.headless = True
+    # firefox_options.headless = True
     browser = webdriver.Firefox(options=firefox_options)
     browser.get('localhost:8081')
     login()
@@ -88,5 +88,5 @@ if __name__ == '__main__':
         get_clothes()
         get_accessories()
         get_art()
-        get_disccount()
+        get_discount()
         time.sleep(random.randint(10, 30))

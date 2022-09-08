@@ -4,6 +4,9 @@ import settings
 from capture import Capture
 from settings import logger as logging
 from utils import verify_interface
+from memory_profiler import LogFile
+import sys
+
 
 
 def main():
