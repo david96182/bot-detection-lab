@@ -2,6 +2,5 @@
 .idea/
 *__pycache__/
 *.pyc
-features-capture/capture.pcap
-features-capture/flow_analysis.bitnetflow
+*.bitnetflow
 moderate-bot/geckodriver.log

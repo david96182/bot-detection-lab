@@ -19,6 +19,7 @@ Packet Analyzer for the Capture Module
  :TotPkts
  :TotBytes
  :SrcBytes
+ :Label
 """
 
 INTERVAL = 15
@@ -29,7 +30,7 @@ FLAGS_ORDER = 'FSRPAECU'
 class FlowAnalysis(Thread):
     def __init__(self, name, packet, loop_time=1.0 / 60):
         super().__init__(name=name)
-        self.pkt_list = [packet]
+
         self.q = queue.Queue()
         self.timeout = loop_time
         self.wait_time = INTERVAL
@@ -101,7 +102,6 @@ class FlowAnalysis(Thread):
         self.wait_time = 0
 
     def handle_incoming_packet(self, packet):
-        self.pkt_list.append(packet)
 
         inc_time = get_date_string(packet.frame_info.time)
         self.duration = (inc_time - self.start_time).total_seconds()
@@ -136,16 +136,15 @@ class FlowAnalysis(Thread):
     def calculate_network_state(self, packet):
         state = ''
         if 'UDP' in packet:
-            # ['srcport', 'dstport', 'port', 'length', 'checksum', 'checksum_status', 'stream', '', 'time_relative', 'time_delta', 'payload']
             self.state = 'CON'
         if 'TCP' in packet:
             is_src = False
             if self.src_adr == packet.ip.src:
                 is_src = True
-            # [flags_res', 'flags_ns', 'flags_cwr' ,'flags_ecn', 'flags_urg', 'flags_ack', 'flags_push', 'flags_reset', 'flags_syn', 'flags_fin', 'flags_str']
-            # LETTERS OF STATES: flags_cwr - C, tcp.flags_ecn - E, tcp.flags_urg - U, tcp.flags_ack - A, flags_push - P
-            #         8          flags_reset - R, flags_syn - S, flags_fin - F
-            # discarted tcp: tcp.flags_res ,tcp.flags_ns,
+            # [flags_res', 'flags_ns', 'flags_cwr' ,'flags_ecn', 'flags_urg', 'flags_ack', 'flags_push',
+            # 'flags_reset', 'flags_syn', 'flags_fin', 'flags_str'] LETTERS OF STATES: flags_cwr - C, tcp.flags_ecn -
+            # E, tcp.flags_urg - U, tcp.flags_ack - A, flags_push - P 8          flags_reset - R, flags_syn - S,
+            # flags_fin - F discarted tcp: tcp.flags_res ,tcp.flags_ns,
             tcp_flags = {'F': packet.tcp.flags_fin, 'S': packet.tcp.flags_syn, 'R': packet.tcp.flags_reset,
                          'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ecn,
                          'C': packet.tcp.flags_cwr, 'U': packet.tcp.flags_urg}
@@ -197,13 +196,3 @@ class FlowAnalysis(Thread):
                 logging.info('Saving to file flow with id: %s', self.name)
             except Exception as e:
                 logging.error('Error writing to file: ' + str(e))
-
-
-"""
-    def __str__(self):
-        return f'{self.name: }' + str(self.start_time) + ',' + str(self.duration) + ',' + str(self.protocol) + ',' + \
-               str(self.src_adr) + ',' + str(self.src_port) + ',' + str(self.dst_adr) + ',' + \
-               str(self.dst_port) + ',' + str(self.state) + ',' + str(self.s_tos) + ',' + \
-               str(self.d_tos) + ',' + str(self.tot_pkts) + ',' + str(self.tot_bytes) + ',' + \
-               str(self.src_bytes) + '\n'
-"""

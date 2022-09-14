@@ -16,13 +16,13 @@ class Capture:
 
     def start(self):
         """
-        Starts the capture process and create the threads for each netflow for the
+        Starts the capture process and create the threads for each netflow
         """
         capture = LiveCapture(self.interface, output_file=self.out_file)
-        capture.sniff(timeout=0)
+        # capture.sniff(timeout=0)
         logging.info('Starting capture on interface %s', self.interface)
 
-        for packet in capture.sniff_continuously(packet_count=100):
+        for packet in capture.sniff_continuously():   # live capture
             key, inv_key = get_flow_id(packet)
 
             if key in get_threads_names() or inv_key in get_threads_names():
@@ -33,13 +33,5 @@ class Capture:
                 thread.on_thread(thread.handle_incoming_packet, packet)
             else:
                 logging.info(f'Captured packet with id: {key}')
-                if 'Mysql' not in packet:
-                    thread = FlowAnalysis(key, packet)
-                    thread.start()
-
-    def stop(self):
-        """
-        TODO
-        Stops the capture.
-        """
-        pass
+                thread = FlowAnalysis(key, packet)
+                thread.start()

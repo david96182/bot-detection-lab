@@ -1,16 +1,13 @@
 import os
-import sys
 import settings
 from capture import Capture
 from settings import logger as logging
 from utils import verify_interface
-from memory_profiler import LogFile
 import sys
 
 
-
 def main():
-    logging.info('Starting application')
+    logging.info('Starting application with PID: %s' % os.getpid())
     configuration = settings.get_config()
     interface = str(configuration['interface']['network_interface'])
     out_file = str(configuration['pcap']['pcap_file'])
