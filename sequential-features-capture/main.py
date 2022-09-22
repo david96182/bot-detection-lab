@@ -4,9 +4,10 @@ from capture import Capture
 from settings import logger as logging
 from utils import verify_interface
 import sys
-
+import yappi
 
 def main():
+    yappi.start()
     logging.info('Starting application')
     configuration = settings.get_config()
     interface = str(configuration['interface']['network_interface'])
@@ -16,6 +17,9 @@ def main():
     if verify_interface(interface):
         capture = Capture(interface, out_file)
         capture.start()
+
+        yappi.get_func_stats().print_all()
+        yappi.get_thread_stats().print_all()
     else:
         logging.error(f'Interface {interface} doesnt exists, exiting application')
         sys.exit()

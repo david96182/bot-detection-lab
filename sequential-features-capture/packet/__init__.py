@@ -78,11 +78,26 @@ class FlowAnalysis:
         self.tot_pkts = 1
         self.tot_bytes = int(packet.length)
         self.src_bytes = int(packet.length)
+
+        self.flow = 'Background'
+        if '172.22.0' in self.src_adr or '172.22.0' in self.dst_adr:
+            last_src = None
+            last_dst = None
+            if '172.22.0' in self.src_adr:
+                last_src = int(self.src_adr.split('.')[len(self.src_adr.split('.')) - 1])
+            if '172.22.0' in self.dst_adr:
+                last_dst = int(self.dst_adr.split('.')[len(self.dst_adr.split('.')) - 1])
+            if (last_src and last_src > 3) or (last_dst and last_dst > 3):
+                self.flow = 'Botnet'
+            elif (last_src and last_src == 1) or (last_dst and last_dst == 1):
+                self.flow = 'Normal'
+
         logging.info(f'Packet #{packet.number} processed in netflow: %s', self.name)
 
     def handle_incoming_packet(self, packet):
 
         self.elapsed_time = 0
+        self.last_time = time.time()
         inc_time = get_date_string(packet.frame_info.time)
         self.duration = (inc_time - self.start_time).total_seconds()
 
@@ -121,10 +136,6 @@ class FlowAnalysis:
             is_src = False
             if self.src_adr == packet.ip.src:
                 is_src = True
-            # [flags_res', 'flags_ns', 'flags_cwr' ,'flags_ecn', 'flags_urg', 'flags_ack', 'flags_push',
-            # 'flags_reset', 'flags_syn', 'flags_fin', 'flags_str'] LETTERS OF STATES: flags_cwr - C, tcp.flags_ecn -
-            # E, tcp.flags_urg - U, tcp.flags_ack - A, flags_push - P 8          flags_reset - R, flags_syn - S,
-            # flags_fin - F discarted tcp: tcp.flags_res ,tcp.flags_ns,
             tcp_flags = {'F': packet.tcp.flags_fin, 'S': packet.tcp.flags_syn, 'R': packet.tcp.flags_reset,
                          'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ecn,
                          'C': packet.tcp.flags_cwr, 'U': packet.tcp.flags_urg}

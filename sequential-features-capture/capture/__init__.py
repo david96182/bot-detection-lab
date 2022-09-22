@@ -51,4 +51,3 @@ class Capture:
                     expired_netflows.append(key)
             for key in expired_netflows:
                 self.net_flows.pop(key)
-            print(self.net_flows)
