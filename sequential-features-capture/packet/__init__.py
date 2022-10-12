@@ -1,6 +1,4 @@
-import queue
 import time
-from threading import Thread
 from settings import logger as logging
 from utils import get_date_string
 
