@@ -2,22 +2,28 @@ import os
 import sys
 import traceback
 import logging.handlers
-from configparser import ConfigParser
-
-CONFIG_PATH = './config.ini'
+import settings
 
 
-def get_config():
-    config = ConfigParser()
-    config.read(CONFIG_PATH)
-    logging.info(f'Reading config file {CONFIG_PATH}')
-    return config
+def import_config():
+    module_name = 'config'
+    try:
+        module = __import__(module_name, globals=globals(), level=1)
+    except ImportError:
+        return False
+
+    for var in dir(module):
+        if var not in globals():
+            globals()[var] = module.__dict__.get(var)
+
+    return True
 
 
-# set directory to settings
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-log_name = get_config()['log']['log_file']
-log_path = get_config()['log']['log_path']
+import_config()
+
+
+log_name = settings.LOG_FILE
+log_path = settings.LOG_PATH
 full_log_path = str(log_path + '/' + log_name)
 
 # log_handler = logging.StreamHandler(sys.stdout)

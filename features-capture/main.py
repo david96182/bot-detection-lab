@@ -4,23 +4,15 @@ from capture import Capture
 from settings import logger as logging
 from utils import verify_interface
 import sys
-import yappi
+
 
 def main():
-    #yappi.start()
     logging.info('Starting application with PID: %s' % os.getpid())
-    configuration = settings.get_config()
-    interface = str(configuration['interface']['network_interface'])
-    out_file = str(configuration['pcap']['pcap_file'])
-
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    interface = settings.NETWORK_INTERFACE
+    out_file = settings.PCAP_FILE
     if verify_interface(interface):
         capture = Capture(interface, out_file)
         capture.start()
-
-        #yappi.stop()
-        #yappi.get_func_stats().print_all()
-        #yappi.get_thread_stats().print_all()
     else:
         logging.error(f'Interface {interface} doesnt exists, exiting application')
         sys.exit()
