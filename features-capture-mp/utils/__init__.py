@@ -13,7 +13,6 @@ def get_thread_by_name(thread_name):
     thread = None
     threads = filter(lambda t: t.name == thread_name, mp.active_children())
     thread = list(threads)[0]
-    print('thread to call:', thread)
 
     return thread
 
@@ -25,7 +24,6 @@ def get_threads_names():
     """
     threads = mp.active_children()
     threads_names = [t.name for t in threads]
-    print(threads_names)
     return threads_names
 
 

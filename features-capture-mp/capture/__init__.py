@@ -30,7 +30,7 @@ class Capture:
                     key = inv_key
                 logging.info(f'Captured packet with id: {key}')
                 thread = get_thread_by_name(key)
-                thread.on_thread(thread.handle_incoming_packet, packet)
+                thread.on_thread(packet)
             else:
                 logging.info(f'Captured packet with id: {key}')
                 thread = FlowAnalysis(key, packet)
