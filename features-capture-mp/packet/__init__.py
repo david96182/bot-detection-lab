@@ -171,7 +171,7 @@ class FlowAnalysis(Process):
             # E, tcp.flags_urg - U, tcp.flags_ack - A, flags_push - P 8          flags_reset - R, flags_syn - S,
             # flags_fin - F discarted tcp: tcp.flags_res ,tcp.flags_ns,
             tcp_flags = {'F': packet.tcp.flags_fin, 'S': packet.tcp.flags_syn, 'R': packet.tcp.flags_reset,
-                         'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ecn,
+                         'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ece,
                          'C': packet.tcp.flags_cwr, 'U': packet.tcp.flags_urg}
 
             if self.state == '':

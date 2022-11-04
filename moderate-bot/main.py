@@ -2,6 +2,7 @@ import random
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service as FirefoxService
 import json
 
 
@@ -71,15 +72,16 @@ def get_discount():
 def login():
     browser.find_element(By.CLASS_NAME, 'user-info').click()
     browser.find_element(By.ID, 'field-email').send_keys('puertadavid96@email.com')
-    browser.find_element(By.ID, 'field-password').send_keys('12345678')
+    browser.find_element(By.ID, 'field-password').send_keys('Qwe1234567@rs*')  # 12345678
     browser.find_element(By.ID, 'submit-login').click()
     time.sleep(10)
 
 
 if __name__ == '__main__':
+    service = FirefoxService(executable_path='./geckodriver')
     firefox_options = webdriver.FirefoxOptions()
     # firefox_options.headless = True
-    browser = webdriver.Firefox(options=firefox_options)
+    browser = webdriver.Firefox(options=firefox_options, service=service)
     browser.get('localhost:8081')
     login()
 

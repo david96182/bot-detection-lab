@@ -4,3 +4,4 @@
 *.pyc
 *.bitnetflow
 moderate-bot/geckodriver.log
+geckodriver
