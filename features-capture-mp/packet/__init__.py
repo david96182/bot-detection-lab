@@ -30,12 +30,10 @@ FLAGS_ORDER = 'FSRPAECU'
 
 
 class FlowAnalysis(Process):
-    def __init__(self, name, packet, loop_time=1.0 / 60):  # MainProcess
+    def __init__(self, name, packet):  # MainProcess
         super().__init__(name=name)
 
         self.q = Queue()
-        #self.timeout = loop_time
-        #self.wait_time = INTERVAL
         self.continue_flag = True
         self.packet = packet
 

@@ -28,86 +28,84 @@ FLAGS_ORDER = 'FSRPAECU'
 
 
 class FlowAnalysis(Thread):
-    def __init__(self, name, packet, loop_time=1.0 / 60):
+    def __init__(self, name, packet):
         super().__init__(name=name)
 
         self.q = queue.Queue()
-        self.timeout = loop_time
-        self.wait_time = INTERVAL
         self.continue_flag = True
+        self.packet = packet
 
-        self.start_time = get_date_string(packet.frame_info.time)
+    def init(self):
+        self.start_time = get_date_string(self.packet.frame_info.time)
 
         self.duration = 0
 
-        pkt_protocol = packet.highest_layer
+        pkt_protocol = self.packet.highest_layer
         if pkt_protocol == 'DATA':
-            pkt_protocol = packet.layers[len(packet.layers) - 2].layer_name
+            pkt_protocol = self.packet.layers[len(self.packet.layers) - 2].layer_name
         self.protocol = pkt_protocol
 
         if self.protocol == 'ARP':
-            self.src_adr = packet.arp.src_proto_ipv4
-            self.dst_adr = packet.arp.dst_proto_ipv4
+            self.src_adr = self.packet.arp.src_proto_ipv4
+            self.dst_adr = self.packet.arp.dst_proto_ipv4
             self.src_port = ''
             self.dst_port = ''
-        elif 'IP' in packet:
-            self.src_adr = packet.ip.src
-            self.dst_adr = packet.ip.dst
-            self.s_tos = packet.ip.dsfield_dscp
-        elif 'IPv6' in packet:
-            self.src_adr = packet.ipv6.src
-            self.dst_adr = packet.ipv6.dst
+        elif 'IP' in self.packet:
+            self.src_adr = self.packet.ip.src
+            self.dst_adr = self.packet.ip.dst
+            self.s_tos = self.packet.ip.dsfield_dscp
+        elif 'IPv6' in self.packet:
+            self.src_adr = self.packet.ipv6.src
+            self.dst_adr = self.packet.ipv6.dst
 
-        if 'TCP' in packet:
-            self.src_port = packet.tcp.srcport
-            self.dst_port = packet.tcp.dstport
-        elif 'ICMP' in packet:
-            self.src_port = packet.icmp.udp_srcport
-            self.dst_port = packet.icmp.udp_dstport
-        elif 'UDP' in packet:
-            self.src_port = packet.udp.srcport
-            self.dst_port = packet.udp.dstport
+        if 'TCP' in self.packet:
+            self.src_port = self.packet.tcp.srcport
+            self.dst_port = self.packet.tcp.dstport
+        elif 'ICMP' in self.packet:
+            self.src_port = self.packet.icmp.udp_srcport
+            self.dst_port = self.packet.icmp.udp_dstport
+        elif 'UDP' in self.packet:
+            self.src_port = self.packet.udp.srcport
+            self.dst_port = self.packet.udp.dstport
 
         self.state = ''
-        self.state = self.calculate_network_state(packet)
+        self.state = self.calculate_network_state(self.packet)
         self.d_tos = ''
         if not hasattr(self, 's_stos'):
             self.s_tos = ''
 
         self.tot_pkts = 1
-        self.tot_bytes = int(packet.length)
-        self.src_bytes = int(packet.length)
+        self.tot_bytes = int(self.packet.length)
+        self.src_bytes = int(self.packet.length)
 
         self.flow = 'Background'
         if '172.18.0' in self.src_adr or '172.18.0' in self.dst_adr:
             last_src = None
             last_dst = None
             if '172.18.0' in self.src_adr:
-                last_src = int(self.src_adr.split('.')[len(self.src_adr.split('.'))-1])
+                last_src = int(self.src_adr.split('.')[len(self.src_adr.split('.')) - 1])
             if '172.18.0' in self.dst_adr:
-                last_dst = int(self.dst_adr.split('.')[len(self.dst_adr.split('.'))-1])
+                last_dst = int(self.dst_adr.split('.')[len(self.dst_adr.split('.')) - 1])
             if (last_src and last_src > 3) or (last_dst and last_dst > 3):
                 self.flow = 'Botnet'
             elif (last_src and last_src == 1) or (last_dst and last_dst == 1):
                 self.flow = 'Normal'
 
-        logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
+        logging.info(f'Packet #{self.packet.number} processed in thread: %s', self.name)
 
     def on_thread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
 
     def run(self):
-        while self.continue_flag and self.wait_time > 0:
-            time.sleep(1)
-            self.wait_time = self.wait_time - 1
+        self.init()
+        while self.continue_flag:
             try:
-                function, args, kwargs = self.q.get(timeout=self.timeout)
-                function(*args, **kwargs)
-                self.wait_time = INTERVAL
+                function, args, kwargs = self.q.get(block=True, timeout=INTERVAL)
             except queue.Empty:
-                self.idle()
-        if self.continue_flag:
-            self.save_to_file()
+                self.save_to_file()
+                self.continue_flag = False
+            else:
+                function(*args, **kwargs)
 
     def idle(self):
         pass

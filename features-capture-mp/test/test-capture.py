@@ -26,4 +26,9 @@ if __name__ == '__main__':
                                                                                        flags='RSE')
     sendp(x=packet, iface=iface)
 
+    time.sleep(20)
+    packet = Ether() / IP(src="22.22.22.22", dst="33.33.33.33", tos=2, len=1959) / TCP(dport=9876, sport=6789,
+                                                                                       flags='RSE')
+    sendp(x=packet, iface=iface)
+
     # send(IP(dst='172.22.0.2')/TCP(dport=53, flags='S'), iface='br-518ff7874c35') # send packets at layer 3
