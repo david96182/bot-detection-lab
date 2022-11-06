@@ -34,8 +34,8 @@ class FlowAnalysis(Process):
         super().__init__(name=name)
 
         self.q = Queue()
-        self.timeout = loop_time
-        self.wait_time = INTERVAL
+        #self.timeout = loop_time
+        #self.wait_time = INTERVAL
         self.continue_flag = True
         self.packet = packet
 
@@ -102,17 +102,14 @@ class FlowAnalysis(Process):
 
     def run(self):  # Parallel
         self.init()
-        while self.continue_flag and self.wait_time > 0:
-            time.sleep(1)
-            self.wait_time = self.wait_time - 1
+        while self.continue_flag:
             try:
-                packet = self.q.get(timeout=self.timeout)
-                self.handle_incoming_packet(packet)
-                self.wait_time = INTERVAL
+                packet = self.q.get(block=True, timeout=INTERVAL)
             except queue.Empty:
-                self.idle()
-        if self.continue_flag:
-            self.save_to_file()
+                self.save_to_file()
+                self.continue_flag = False
+            else:
+                self.handle_incoming_packet(packet)
 
     def idle(self):
         pass

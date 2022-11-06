@@ -135,7 +135,7 @@ class FlowAnalysis:
             if self.src_adr == packet.ip.src:
                 is_src = True
             tcp_flags = {'F': packet.tcp.flags_fin, 'S': packet.tcp.flags_syn, 'R': packet.tcp.flags_reset,
-                         'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ecn,
+                         'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ece,
                          'C': packet.tcp.flags_cwr, 'U': packet.tcp.flags_urg}
 
             if self.state == '':
