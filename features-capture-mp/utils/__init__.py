@@ -4,27 +4,27 @@ import pyshark.tshark.tshark
 from settings import logger as logging
 
 
-def get_thread_by_name(thread_name):
+def get_process_by_name(process_name):
     """
-    Return a thread instance giving the thread name
-    :param thread_name: name of the thread
-    :return: thread instance
+    Return a process instance giving the process name
+    :param process_name: name of the process
+    :return: process instance
     """
-    thread = None
-    threads = filter(lambda t: t.name == thread_name, mp.active_children())
-    thread = list(threads)[0]
+    process = None
+    processes = filter(lambda p: p.name == process_name, mp.active_children())
+    process = list(processes)[0]
 
-    return thread
+    return process
 
 
-def get_threads_names():
+def get_processes_names():
     """
-    Return a list with the name of all the threads alive
-    :return: list with threads names
+    Return a list with the name of all the process alive
+    :return: list with process names
     """
-    threads = mp.active_children()
-    threads_names = [t.name for t in threads]
-    return threads_names
+    processes = mp.active_children()
+    processes_names = [p.name for p in processes]
+    return processes_names
 
 
 def get_date_string(date_str):
@@ -47,45 +47,3 @@ def verify_interface(interface):
         return True
     return False
 
-
-def get_flow_id(packet):
-    """
-    Returns the flow id of a network packet.
-    """
-    pkt_protocol = packet.highest_layer
-    if pkt_protocol == 'DATA':
-        pkt_protocol = packet.layers[len(packet.layers) - 2].layer_name
-    try:
-        if pkt_protocol == 'ARP':
-            src_ip = packet.arp.src_proto_ipv4
-            dst_ip = packet.arp.dst_proto_ipv4
-
-            key = '%s;%s;%s' % (src_ip, dst_ip, pkt_protocol)
-            inv_key = '%s;%s;%s' % (dst_ip, src_ip, pkt_protocol)
-        else:
-            if 'IP' in packet:
-                src_ip = packet.ip.src
-                dst_ip = packet.ip.dst
-            elif 'IPv6' in packet:
-                src_ip = packet.ipv6.src
-                dst_ip = packet.ipv6.dst
-
-            if 'TCP' in packet:
-                src_port = packet.tcp.srcport
-                dst_port = packet.tcp.dstport
-            elif 'ICMP' in packet:
-                src_port = packet.icmp.udp_srcport
-                dst_port = packet.icmp.udp_dstport
-            else:
-                src_port = packet.udp.srcport
-                dst_port = packet.udp.dstport
-
-            key = "%s; %s; -> %s; %s; %s" % (src_ip, src_port, dst_ip, dst_port, pkt_protocol)
-            inv_key = "%s; %s; -> %s; %s; %s" % (dst_ip, dst_port, src_ip, src_port, pkt_protocol)
-
-    except AttributeError():
-        logging.error(f'Packet has no IP layer: {packet.highest_layer}')
-        logging.error(packet)
-        logging.error(packet.ip.src)
-
-    return key, inv_key

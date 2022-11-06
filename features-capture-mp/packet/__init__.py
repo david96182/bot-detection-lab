@@ -1,4 +1,3 @@
-import multiprocessing
 import queue
 import time
 from multiprocessing import Process, Queue
@@ -105,7 +104,6 @@ class FlowAnalysis(Process):
         self.init()
         while self.continue_flag and self.wait_time > 0:
             time.sleep(1)
-            logging.warning(self.wait_time)
             self.wait_time = self.wait_time - 1
             try:
                 packet = self.q.get(timeout=self.timeout)
