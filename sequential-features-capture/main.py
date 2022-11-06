@@ -8,11 +8,9 @@ import sys
 
 def main():
     logging.info('Starting application')
-    configuration = settings.get_config()
-    interface = str(configuration['interface']['network_interface'])
-    out_file = str(configuration['pcap']['pcap_file'])
+    interface = settings.NETWORK_INTERFACE
+    out_file = settings.PCAP_FILE
 
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     if verify_interface(interface):
         capture = Capture(interface, out_file)
         capture.start()
