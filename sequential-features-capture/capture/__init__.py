@@ -23,7 +23,7 @@ class Capture:
         logging.info('Starting capture on interface %s', self.interface)
 
         # for packet in capture.sniff_continuously(packet_count=100):   # live capture
-        packets = capture.sniff_continuously(packet_count=1000)
+        packets = capture.sniff_continuously(packet_count=0)
         iterator = iter(packets)
         repeat = True
         counter = 0
@@ -48,7 +48,7 @@ class Capture:
             self.update_netflows()
 
             # for profiling
-            if counter == 1000 and len(self.net_flows) == 0:
+            if counter == 10000 and len(self.net_flows) == 0:
                 print('Finishing.')
                 break
 
