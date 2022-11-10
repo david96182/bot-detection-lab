@@ -10,3 +10,8 @@ PCAP_FILE = 'capture.pcap'
 # name of the log file
 LOG_FILE = 'bto_logs.log'
 LOG_PATH = '/home/david/logs'
+
+# test variables
+TESTING = 0
+# amount of packets to capture then stop ( 0 for non-stop capture )
+PACKETS = 0

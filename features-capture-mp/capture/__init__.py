@@ -64,7 +64,7 @@ class Capture:
         # capture.sniff(timeout=0)
         logging.info('Starting capture on interface %s', self.interface)
 
-        for packet in capture.sniff_continuously(packet_count=0):   # live capture
+        for packet in capture.sniff_continuously(packet_count=20000):   # live capture
             key, inv_key = get_flow_id(packet)
             if key in get_processes_names() or inv_key in get_processes_names():
                 if inv_key in get_processes_names():
