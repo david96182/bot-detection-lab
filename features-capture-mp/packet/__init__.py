@@ -137,14 +137,8 @@ class FlowAnalysis(Process):
                 self.src_bytes += int(packet.length)
 
         self.state = self.calculate_network_state(packet)
-        terminate = False
-        if 'F' in self.state or 'R' in self.state:
-            pass
 
         logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
-        if terminate:
-            self.save_to_file()
-            self.kill()
 
     def calculate_network_state(self, packet):  # Parallel
         """

@@ -1,7 +1,6 @@
 import multiprocessing as mp
 from datetime import datetime
 import pyshark.tshark.tshark
-from settings import logger as logging
 
 
 def get_process_by_name(process_name):

@@ -56,6 +56,20 @@ class Capture:
         self.interface = interface
         self.out_file = output
 
+    def packet_callback(self, packet):
+        key, inv_key = get_flow_id(packet)
+        processes_names = get_processes_names()
+        if key in processes_names or inv_key in processes_names:
+            if inv_key in processes_names:
+                key = inv_key
+            logging.info(f'Captured packet with id: {key}')
+            thread = get_process_by_name(key)
+            thread.on_thread(packet)
+        else:
+            logging.info(f'Captured packet with id: {key}')
+            thread = FlowAnalysis(key, packet)
+            thread.start()
+
     def start(self):
         """
         Starts the capture process and create a process for each netflow
@@ -64,16 +78,6 @@ class Capture:
         # capture.sniff(timeout=0)
         logging.info('Starting capture on interface %s', self.interface)
 
-        for packet in capture.sniff_continuously(packet_count=20000):   # live capture
-            key, inv_key = get_flow_id(packet)
-            if key in get_processes_names() or inv_key in get_processes_names():
-                if inv_key in get_processes_names():
-                    key = inv_key
-                logging.info(f'Captured packet with id: {key}')
-                thread = get_process_by_name(key)
-                thread.on_thread(packet)
-            else:
-                logging.info(f'Captured packet with id: {key}')
-                thread = FlowAnalysis(key, packet)
-                thread.start()
+        capture.apply_on_packets(callback=self.packet_callback, packet_count=0)  # live capture
+
 

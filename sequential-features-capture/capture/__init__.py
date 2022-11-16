@@ -1,8 +1,8 @@
 from packet import FlowAnalysis
 from settings import logger as logging
 from pyshark import LiveCapture
-from utils import get_threads_names, get_thread_by_name
 from utils import get_flow_id
+from iterators import TimeoutIterator
 
 
 class Capture:
@@ -23,14 +23,15 @@ class Capture:
         logging.info('Starting capture on interface %s', self.interface)
 
         # for packet in capture.sniff_continuously(packet_count=100):   # live capture
-        packets = capture.sniff_continuously(packet_count=20000)
-        iterator = iter(packets)
+        packets = capture.sniff_continuously(packet_count=10000)
+        iterator = TimeoutIterator(packets, timeout=0.1, sentinel=None)
         repeat = True
         counter = 0
         while repeat:
             packet = next(iterator, None)
-
+            print(packet)
             if packet is not None:
+                print('Packet')
                 counter += 1
                 key, inv_key = get_flow_id(packet)
 
@@ -44,11 +45,11 @@ class Capture:
                     logging.info(f'Captured packet with id: {key}')
                     netflow = FlowAnalysis(key, packet)
                     self.net_flows[key] = netflow
-
+            print('Update')
             self.update_netflows()
 
             # for profiling
-            if counter == 20000 and len(self.net_flows) == 0:
+            if counter == 10000 and len(self.net_flows) == 0:
                 print('Finishing.')
                 break
 
