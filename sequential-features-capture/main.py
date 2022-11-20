@@ -1,4 +1,6 @@
 import os
+import time
+
 import settings
 from capture import Capture
 from settings import logger as logging
@@ -20,4 +22,7 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     main()
+    end = time.perf_counter() - start
+    print(end)

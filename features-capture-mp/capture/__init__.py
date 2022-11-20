@@ -1,3 +1,6 @@
+import multiprocessing
+import time
+
 from packet import FlowAnalysis
 from settings import logger as logging
 from pyshark import LiveCapture
@@ -74,10 +77,8 @@ class Capture:
         """
         Starts the capture process and create a process for each netflow
         """
-        capture = LiveCapture(self.interface, output_file=self.out_file)
-        # capture.sniff(timeout=0)
+        capture = LiveCapture(self.interface, output_file=self.out_file,)
         logging.info('Starting capture on interface %s', self.interface)
-
-        capture.apply_on_packets(callback=self.packet_callback, packet_count=0)  # live capture
+        capture.apply_on_packets(callback=self.packet_callback, packet_count=100000)  # live capture
 
 

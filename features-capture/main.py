@@ -1,4 +1,7 @@
 import os
+import threading
+import time
+
 import settings
 from capture import Capture
 from settings import logger as logging
@@ -19,4 +22,9 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     main()
+    while threading.active_count() > 1:
+        pass
+    total = time.perf_counter() - start
+    print(total)

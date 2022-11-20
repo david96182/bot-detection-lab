@@ -1,4 +1,7 @@
+import multiprocessing
 import os
+import time
+
 import settings
 from capture import Capture
 from settings import logger as logging
@@ -8,6 +11,7 @@ import sys
 
 def main():
     logging.info('Starting application with PID: %s' % os.getpid())
+    print('PID: %s' % os.getpid())
     interface = settings.NETWORK_INTERFACE
     out_file = settings.PCAP_FILE
     if verify_interface(interface):
@@ -19,4 +23,9 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     main()
+    while multiprocessing.active_children():
+        pass
+    total = time.perf_counter() - start
+    print(total)

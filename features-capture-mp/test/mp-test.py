@@ -5,8 +5,8 @@ to create and send custom networks packets
 """
 import datetime
 import multiprocessing
+import os
 import random
-import threading
 import time
 from multiprocessing import Process
 
@@ -27,16 +27,16 @@ def send_flow():
     dport = random.randint(80, 9000)
     while True:
         # random flags
-        flag = FLAGS[random.randint(0, len(FLAGS)-1)]
+        flag = FLAGS[random.randint(0, len(FLAGS)-1)] if random.uniform(0, 1) else None
 
         if random.uniform(0, 1) > 0.5:
-            packet = Ether() / IP(dst=dst, src=src, tos=random.randint(0, 3), len=random.randint(50, 300)) / TCP(
-                sport=sport, dport=dport,
-                flags=flag)
+            packet = Ether() / \
+                     IP(dst=dst, src=src, tos=random.randint(0, 3), len=random.randint(50, 300)) / \
+                     TCP(sport=sport, dport=dport, flags=flag)
         else:
-            packet = Ether() / IP(dst=src, src=dst, tos=random.randint(0, 3), len=random.randint(50, 300)) / TCP(
-                sport=sport, dport=dport,
-                flags=flag)
+            packet = Ether() / \
+                     IP(dst=src, src=dst, tos=random.randint(0, 3), len=random.randint(50, 300)) / \
+                     TCP(sport=dport, dport=sport, flags=flag)
         packet.time = datetime.datetime.now()
         sendp(x=packet, iface=IFACE)
 
@@ -46,6 +46,8 @@ def send_flow():
 
 
 if __name__ == '__main__':
+    print(os.getgid())
+    time.sleep(3)
 
     proc_list = []
 

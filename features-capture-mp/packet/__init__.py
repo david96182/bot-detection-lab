@@ -109,12 +109,6 @@ class FlowAnalysis(Process):
             else:
                 self.handle_incoming_packet(packet)
 
-    def idle(self):
-        pass
-
-    def interrupt_handler(self, packet):
-        self.wait_time = 0
-
     def handle_incoming_packet(self, packet):  # Parallel
         inc_time = get_date_string(packet.frame_info.time)
         self.duration = (inc_time - self.start_time).total_seconds()
@@ -142,7 +136,6 @@ class FlowAnalysis(Process):
 
     def calculate_network_state(self, packet):  # Parallel
         """
-
         :param packet:
         :return:
         """
