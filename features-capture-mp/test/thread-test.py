@@ -45,7 +45,8 @@ def send_flow():
 
 
 if __name__ == '__main__':
-
+    print(THREADS)
+    time.sleep(3)
     thread_list = []
 
     for num in range(0, THREADS):

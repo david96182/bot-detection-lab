@@ -19,13 +19,19 @@ IFACE = 'br-04bebcffef1f'
 FLAGS = ['F', 'S', 'R', 'P', 'A', 'E', 'C', 'U']
 
 
-def send_flow():
+def send_flow(number):
+    if number > 5:
+        number *= 100
+    else:
+        number *= 1000
     print(f'Running from process: {multiprocessing.current_process()}')
     src = f'{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}'
     dst = f'{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}'
     sport = random.randint(80, 9000)
     dport = random.randint(80, 9000)
+    count = 0
     while True:
+        count += 1
         # random flags
         flag = FLAGS[random.randint(0, len(FLAGS)-1)] if random.uniform(0, 1) else None
 
@@ -40,19 +46,20 @@ def send_flow():
         packet.time = datetime.datetime.now()
         sendp(x=packet, iface=IFACE)
 
-        if random.uniform(0, 1) > 0.99:
+        if count % number == 0:
             print(f'Sleeping in proc: {multiprocessing.current_process()}')
             time.sleep(18)
 
 
 if __name__ == '__main__':
+    print(PROCS)
     print(os.getgid())
     time.sleep(3)
 
     proc_list = []
 
     for num in range(0, PROCS):
-        new_process = Process(target=send_flow, name=f'proc-0{num}')
+        new_process = Process(target=send_flow, args=(num,), name=f'proc-0{num}')
         proc_list.append(new_process)
         new_process.start()
 

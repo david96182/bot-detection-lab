@@ -1,4 +1,3 @@
-import multiprocessing
 import multiprocessing as mp
 from datetime import datetime
 import pyshark.tshark.tshark

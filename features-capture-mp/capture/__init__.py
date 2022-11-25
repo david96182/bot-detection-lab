@@ -79,6 +79,19 @@ class Capture:
         """
         capture = LiveCapture(self.interface, output_file=self.out_file,)
         logging.info('Starting capture on interface %s', self.interface)
-        capture.apply_on_packets(callback=self.packet_callback, packet_count=100000)  # live capture
+        #capture.apply_on_packets(callback=self.packet_callback, packet_count=100000)  # live capture
+        for packet in capture.sniff_continuously(packet_count=200000):
+            key, inv_key = get_flow_id(packet)
+            processes_names = get_processes_names()
+            if key in processes_names or inv_key in processes_names:
+                if inv_key in processes_names:
+                    key = inv_key
+                logging.info(f'Captured packet with id: {key}')
+                thread = get_process_by_name(key)
+                thread.on_thread(packet)
+            else:
+                logging.info(f'Captured packet with id: {key}')
+                thread = FlowAnalysis(key, packet)
+                thread.start()
 
 

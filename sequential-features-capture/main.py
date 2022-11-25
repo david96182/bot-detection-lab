@@ -10,6 +10,7 @@ import sys
 
 def main():
     logging.info('Starting application with PID: %s' % os.getpid())
+    print('PID: %s' % os.getpid())
     interface = settings.NETWORK_INTERFACE
     out_file = settings.PCAP_FILE
 
