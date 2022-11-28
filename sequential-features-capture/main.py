@@ -1,6 +1,5 @@
 import os
 import time
-
 import settings
 from capture import Capture
 from settings import logger as logging
@@ -25,5 +24,7 @@ def main():
 if __name__ == '__main__':
     start = time.perf_counter()
     main()
+    # to avoid execution ends if packets to capture is different than 0 ( 0 = forever)
+    # if its necessary to measure the execution time
     end = time.perf_counter() - start
     print(end)

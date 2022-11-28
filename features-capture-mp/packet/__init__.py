@@ -146,8 +146,8 @@ class FlowAnalysis(Process):
 
     def calculate_network_state(self, packet):  # Parallel
         """
-        :param packet: network packet to analyze network state
-        :return: network state
+        @param packet: network packet to analyze network state
+        @return: network state
         """
         state = ''
         if 'UDP' in packet:

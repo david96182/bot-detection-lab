@@ -1,7 +1,6 @@
 import multiprocessing
 import os
 import time
-
 import settings
 from capture import Capture
 from settings import logger as logging

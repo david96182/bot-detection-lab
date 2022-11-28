@@ -2,33 +2,23 @@ import time
 from settings import logger as logging
 from utils import get_date_string
 
-"""
-Packet Analyzer for the Capture Module
- :StartTime
- :Dur
- :Proto
- :SrcAddr
- :Sport
- :DstAddr
- :Dport
- :State
- :sTos
- :dTos
- :TotPkts
- :TotBytes
- :SrcBytes
- :Label
-"""
-
+# timeout to wait for new packets
 INTERVAL = 15
+# TCP flags order for network state
 FLAGS_ORDER = 'FSRPAECU'
 
 
-# scapy order: FSRPAUECN
-
-
 class FlowAnalysis:
+    """
+    Class that inherits from multiprocessing.Process and
+    creates a new process to analize packets from same netflow
+    """
+
     def __init__(self, name, packet):
+        """
+        @param name: name/id of the netflow
+        @param packet: first packet of the netflow received
+        """
         self.name = name
 
         self.wait_time = INTERVAL
@@ -93,7 +83,11 @@ class FlowAnalysis:
         logging.info(f'Packet #{packet.number} processed in netflow: %s', self.name)
 
     def handle_incoming_packet(self, packet):
-
+        """
+        Method to analyze new packets and update netflow with extracted
+        features
+        @param packet: network packet to analyze
+        """
         self.elapsed_time = 0
         self.last_time = time.time()
         inc_time = get_date_string(packet.frame_info.time)
@@ -117,16 +111,14 @@ class FlowAnalysis:
                 self.src_bytes += int(packet.length)
 
         self.state = self.calculate_network_state(packet)
-        terminate = False
-        if 'F' in self.state or 'R' in self.state:
-            pass
 
         logging.info(f'Packet #{packet.number} processed in netflow: %s', self.name)
-        if terminate:
-            self.save_to_file()
-            self.kill()
 
     def calculate_network_state(self, packet):
+        """
+        @param packet: network packet to analyze network state
+        @return: network state
+        """
         state = ''
         if 'UDP' in packet:
             self.state = 'CON'
@@ -177,9 +169,15 @@ class FlowAnalysis:
         return state
 
     def update_elapsed_time(self):
+        """
+        Update the elapsed time in the netflow
+        """
         self.elapsed_time = time.time() - self.last_time
 
     def save_to_file(self):
+        """
+        Save features obtained from packets to a file once netflow timeout is over
+        """
         with open('flow_analysis.bitnetflow', 'a') as f:
             try:
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'

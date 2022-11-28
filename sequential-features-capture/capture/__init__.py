@@ -7,23 +7,27 @@ from iterators import TimeoutIterator
 
 class Capture:
     """
-    Class to create the capture and processing flow
+    Class to create the network traffic capture and creates process
+    for each netflow
     """
 
     def __init__(self, interface, output):
+        """
+        @param interface: name of the interface to capture traffic from
+        @param output: output path where to save all captured traffic
+        """
         self.interface = interface
         self.out_file = output
         self.net_flows = {}
 
     def start(self):
         """
-        Starts the capture process and create the netflow
+        Starts the capture process and create a process for each netflow
         """
         capture = LiveCapture(self.interface, output_file=self.out_file)
         logging.info('Starting capture on interface %s', self.interface)
 
-        # for packet in capture.sniff_continuously(packet_count=100):   # live capture
-        packets = capture.sniff_continuously(packet_count=200000)
+        packets = capture.sniff_continuously(packet_count=0)
         iterator = TimeoutIterator(packets, timeout=0.1, sentinel=None)
         repeat = True
         counter = 0
@@ -54,6 +58,10 @@ class Capture:
                 break
 
     def update_netflows(self):
+        """
+        Update the timeout of each active netflow and stop
+        call save to file method from expired netflows
+        """
         expired_netflows = []
         for key, value in self.net_flows.items():
             finish = False

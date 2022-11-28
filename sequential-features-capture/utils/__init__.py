@@ -5,8 +5,9 @@ from settings import logger as logging
 
 def get_date_string(date_str):
     """
-    Return a date giving the date as string
-    :return: datetime object
+    Return a date giving the date as string. Patch applied also to remove
+    space found in some dates from networks packets
+    @return: datetime object
     """
     date_spl = date_str.split(' ')
     if '' in date_spl:
@@ -18,6 +19,11 @@ def get_date_string(date_str):
 
 
 def verify_interface(interface):
+    """
+    Verify if the interface is recognizable and available
+    @param interface: interface name
+    @return: True if interface is found else False
+    """
     interfaces = pyshark.tshark.tshark.get_tshark_interfaces()
     if interface in interfaces:
         return True
@@ -26,7 +32,9 @@ def verify_interface(interface):
 
 def get_flow_id(packet):
     """
-    Returns the flow id of a network packet.
+    Extract the key and the inverted key of the netflow from the packet
+    @param packet: network packet
+    @return: key and inverted key of the netflow
     """
     pkt_protocol = packet.highest_layer
     if pkt_protocol == 'DATA':

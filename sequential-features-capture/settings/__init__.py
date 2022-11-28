@@ -7,6 +7,10 @@ import settings
 
 
 def import_config():
+    """
+    Method to import config parameters from the config file
+    @return: True if success otherwise False
+    """
     module_name = 'config'
     try:
         module = __import__(module_name, globals=globals(), level=1)
@@ -26,7 +30,7 @@ log_name = settings.LOG_FILE
 log_path = settings.LOG_PATH
 full_log_path = str(log_path + '/' + log_name)
 
-# log_handler = logging.StreamHandler(sys.stdout)
+# log_handler = logging.StreamHandler(sys.stdout) allow print logs in the console
 log_handler = logging.handlers.WatchedFileHandler(full_log_path)
 log_format = logging.Formatter(r'%(asctime)s %(levelname)s [%(pathname)s:%(lineno)s] %(message)s')
 log_handler.setFormatter(log_format)
