@@ -25,6 +25,8 @@ def main():
 if __name__ == '__main__':
     start = time.perf_counter()
     main()
+    # to avoid execution ends if packets to capture is different than 0 ( 0 = forever)
+    # if its necessary to measure the execution time
     while multiprocessing.active_children():
         pass
     total = time.perf_counter() - start
