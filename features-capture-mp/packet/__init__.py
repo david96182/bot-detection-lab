@@ -1,36 +1,24 @@
 import queue
-import time
 from multiprocessing import Process, Queue
 from settings import logger as logging
 from utils import get_date_string
 
-"""
-Packet Analyzer for the Capture Module
- :StartTime
- :Dur
- :Proto
- :SrcAddr
- :Sport
- :DstAddr
- :Dport
- :State
- :sTos
- :dTos
- :TotPkts
- :TotBytes
- :SrcBytes
- :Label
-"""
-
+# timeout to wait for new packets
 INTERVAL = 15
+# TCP flags order for network state
 FLAGS_ORDER = 'FSRPAECU'
 
 
-# scapy order: FSRPAUECN
-
-
 class FlowAnalysis(Process):
+    """
+    Class that inherits from multiprocessing.Process and
+    creates a new process to analize packets from same netflow
+    """
     def __init__(self, name, packet):  # MainProcess
+        """
+        @param name: name of the process
+        @param packet: first packet of the netflow received
+        """
         super().__init__(name=name)
 
         self.q = Queue()
@@ -38,6 +26,11 @@ class FlowAnalysis(Process):
         self.packet = packet
 
     def init(self):  # Parallel
+        """
+        Continuation of the constructor method because when creating a new
+        process the init method is executed in the main process (sequential).
+        Extracts the basic info of the netflow
+        """
         self.start_time = get_date_string(self.packet.frame_info.time)
 
         self.duration = 0
@@ -96,9 +89,21 @@ class FlowAnalysis(Process):
         logging.info(f'Packet #{self.packet.number} processed in thread: %s', self.name)
 
     def on_thread(self, packet):  # MainProcess
+        """
+        Allow communication with the main process to send new packets
+        to an already captured netflow. Puts the packets in the queue of
+        packets to be analyzed.
+        @param packet: new packet to analyze
+        """
         self.q.put(packet)
 
     def run(self):  # Parallel
+        """
+        Override method from multiprocessing. Start the execution of the
+        process and keep the process alive to wait for new packets until the
+        queue get timeout its over.
+        @return:
+        """
         self.init()
         while self.continue_flag:
             try:
@@ -110,6 +115,11 @@ class FlowAnalysis(Process):
                 self.handle_incoming_packet(packet)
 
     def handle_incoming_packet(self, packet):  # Parallel
+        """
+        Method to analyze new packets and update netflow with extracted
+        features
+        @param packet: network packet to analyze
+        """
         inc_time = get_date_string(packet.frame_info.time)
         self.duration = (inc_time - self.start_time).total_seconds()
 
@@ -136,8 +146,8 @@ class FlowAnalysis(Process):
 
     def calculate_network_state(self, packet):  # Parallel
         """
-        :param packet:
-        :return:
+        :param packet: network packet to analyze network state
+        :return: network state
         """
         state = ''
         if 'UDP' in packet:
@@ -146,10 +156,6 @@ class FlowAnalysis(Process):
             is_src = False
             if self.src_adr == packet.ip.src:
                 is_src = True
-            # [flags_res', 'flags_ns', 'flags_cwr' ,'flags_ece', 'flags_urg', 'flags_ack', 'flags_push',
-            # 'flags_reset', 'flags_syn', 'flags_fin', 'flags_str'] LETTERS OF STATES: flags_cwr - C, tcp.flags_ece -
-            # E, tcp.flags_urg - U, tcp.flags_ack - A, flags_push - P 8          flags_reset - R, flags_syn - S,
-            # flags_fin - F discarted tcp: tcp.flags_res ,tcp.flags_ns,
             tcp_flags = {'F': packet.tcp.flags_fin, 'S': packet.tcp.flags_syn, 'R': packet.tcp.flags_reset,
                          'P': packet.tcp.flags_push, 'A': packet.tcp.flags_ack, 'E': packet.tcp.flags_ece,
                          'C': packet.tcp.flags_cwr, 'U': packet.tcp.flags_urg}
@@ -193,6 +199,9 @@ class FlowAnalysis(Process):
         return state
 
     def save_to_file(self):  # Parallel
+        """
+        Save features obtained from packets to a file once netflow timeout is over
+        """
         with open('flow_analysis.bitnetflow', 'a') as f:
             try:
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'
