@@ -69,14 +69,17 @@ class Capture:
                 elif 'ICMP' in packet:
                     src_port = packet.icmp.udp_srcport
                     dst_port = packet.icmp.udp_dstport
-                else:
+                elif 'UDP' in packet:
                     src_port = packet.udp.srcport
                     dst_port = packet.udp.dstport
 
                 key = "%s; %s; -> %s; %s; %s" % (src_ip, src_port, dst_ip, dst_port, pkt_protocol)
                 inv_key = "%s; %s; -> %s; %s; %s" % (dst_ip, dst_port, src_ip, src_port, pkt_protocol)
 
-        except AttributeError():
+        except Exception as e:
+            print(packet.highest_layer)
+            print(packet.highest_layer.field_names)
+            print(e)
             logging.error(f'Packet has no IP layer: {packet.highest_layer}')
             logging.error(packet)
             logging.error(packet.ip.src)

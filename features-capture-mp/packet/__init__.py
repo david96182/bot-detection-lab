@@ -151,8 +151,10 @@ class FlowAnalysis(Process):
         """
         state = ''
         if 'UDP' in packet:
-            self.state = 'CON'
-        if 'TCP' in packet:
+            state = 'CON'
+            if not 'UDP' == packet.highest_layer:
+                state = 'INT'
+        elif 'TCP' in packet:
             is_src = False
             if self.src_adr == packet.ip.src:
                 is_src = True
@@ -188,14 +190,11 @@ class FlowAnalysis(Process):
                 state = ''.join([state_update, '_', state_split[1]])
             else:
                 state = ''.join([state_split[0], '_', state_update])
-
-        if self.protocol == 'ARP':
-            if packet.arp.opcode == 1:
-                self.state = 'CON'
-            elif packet.arp.opcode == 2:
-                self.state = 'RSP'
-            else:
-                self.state = 'INT'
+        elif self.protocol == 'ARP':
+            if packet.arp.opcode == '1':
+                state = 'CON'
+            elif packet.arp.opcode == '2':
+                state = 'RSP'
         return state
 
     def save_to_file(self):  # Parallel

@@ -1,0 +1,11 @@
+services:
+  driver:
+    image: selenium/standalone-firefox
+    ports:
+    -  "4444:4444"
+    -  "7900:7900"
+    networks:
+    -  prestashop_default
+networks:
+  prestashop_default:
+    external: true
