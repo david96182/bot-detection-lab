@@ -80,7 +80,7 @@ def login():
 if __name__ == '__main__':
     firefox_options = webdriver.FirefoxOptions()
     firefox_options.headless = False
-    browser = webdriver.Remote("http://127.0.0.1:4444/wd/hub", options=firefox_options)
+    browser = webdriver.Remote(command_executor="http://127.0.0.1:4444/wd/hub", options=firefox_options)
     browser.get('localhost:8081')
     login()
 

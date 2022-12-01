@@ -36,10 +36,11 @@ class FlowAnalysis(Process):
         self.duration = 0
 
         pkt_protocol = self.packet.highest_layer
-        if pkt_protocol == 'DATA':
-            pkt_protocol = self.packet.layers[len(self.packet.layers) - 2].layer_name
+        if 'TCP' in self.packet:
+            pkt_protocol = 'TCP'
+        elif 'UDP' in self.packet:
+            pkt_protocol = 'UDP'
         self.protocol = pkt_protocol
-
         if self.protocol == 'ARP':
             self.src_adr = self.packet.arp.src_proto_ipv4
             self.dst_adr = self.packet.arp.dst_proto_ipv4
@@ -86,7 +87,7 @@ class FlowAnalysis(Process):
             elif (last_src and last_src == 1) or (last_dst and last_dst == 1):
                 self.flow = 'Normal'
 
-        logging.info(f'Packet #{self.packet.number} processed in thread: %s', self.name)
+        logging.info(f'Packet #{self.packet.number} processed in process: %s', self.name)
 
     def on_thread(self, packet):  # MainProcess
         """
@@ -142,7 +143,7 @@ class FlowAnalysis(Process):
 
         self.state = self.calculate_network_state(packet)
 
-        logging.info(f'Packet #{packet.number} processed in thread: %s', self.name)
+        logging.info(f'Packet #{packet.number} processed in process: %s', self.name)
 
     def calculate_network_state(self, packet):  # Parallel
         """
@@ -152,7 +153,7 @@ class FlowAnalysis(Process):
         state = ''
         if 'UDP' in packet:
             state = 'CON'
-            if not 'UDP' == packet.highest_layer:
+            if 'UDP' != packet.highest_layer:
                 state = 'INT'
         elif 'TCP' in packet:
             is_src = False
