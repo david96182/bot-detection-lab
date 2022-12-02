@@ -25,7 +25,7 @@ def send_flow(number):
     else:
         number *= 1000
     print(f'Running from process: {multiprocessing.current_process()}')
-    src = f'172.18.0.{number+4}'
+    src = f'{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}' #f'172.18.0.{number+4}'
     dst = f'{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}'
     sport = random.randint(80, 9000)
     dport = random.randint(80, 9000)
