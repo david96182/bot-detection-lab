@@ -41,11 +41,11 @@ class FlowAnalysis(Process):
         elif 'UDP' in self.packet:
             pkt_protocol = 'UDP'
         self.protocol = pkt_protocol
+        self.src_port = ''
+        self.dst_port = ''
         if self.protocol == 'ARP':
             self.src_adr = self.packet.arp.src_proto_ipv4
             self.dst_adr = self.packet.arp.dst_proto_ipv4
-            self.src_port = ''
-            self.dst_port = ''
         elif 'IP' in self.packet:
             self.src_adr = self.packet.ip.src
             self.dst_adr = self.packet.ip.dst
@@ -196,6 +196,8 @@ class FlowAnalysis(Process):
                 state = 'CON'
             elif packet.arp.opcode == '2':
                 state = 'RSP'
+        elif self.protocol == 'IGMP':
+            state = 'INT'
         return state
 
     def save_to_file(self):  # Parallel
