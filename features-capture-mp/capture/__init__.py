@@ -51,11 +51,11 @@ class Capture:
         elif 'UDP' in packet:
             pkt_protocol = 'UDP'
 
+        src_port = ''
+        dst_port = ''
         if pkt_protocol == 'ARP':
             src_ip = packet.arp.src_proto_ipv4
             dst_ip = packet.arp.dst_proto_ipv4
-            src_port = ''
-            dst_port = ''
 
             key = '%s;%s;%s' % (src_ip, dst_ip, pkt_protocol)
             inv_key = '%s;%s;%s' % (dst_ip, src_ip, pkt_protocol)
