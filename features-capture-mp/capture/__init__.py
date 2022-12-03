@@ -71,8 +71,7 @@ class Capture:
                 src_port = packet.tcp.srcport
                 dst_port = packet.tcp.dstport
             elif 'ICMP' in packet:
-                src_port = packet.icmp.udp_srcport
-                dst_port = packet.icmp.udp_dstport
+                src_port = packet.icmp.checksum
             elif 'UDP' in packet:
                 src_port = packet.udp.srcport
                 dst_port = packet.udp.dstport

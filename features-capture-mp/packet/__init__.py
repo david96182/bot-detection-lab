@@ -7,6 +7,8 @@ from utils import get_date_string
 INTERVAL = 15
 # TCP flags order for network state
 FLAGS_ORDER = 'FSRPAECU'
+ICMP_STATES = {'0': 'ECR', '1': 'UNK', '2': 'UNK', '3': 'URH', '5': 'RED', '7': 'URP', '8': 'ECO', '9': 'RTA',
+                           '10': 'RTS', '11': 'TXD', '12': 'PAR', '13': 'TST', '14': 'TSR', '40': 'PHO'}
 
 
 class FlowAnalysis(Process):
@@ -49,6 +51,7 @@ class FlowAnalysis(Process):
         elif 'IP' in self.packet:
             self.src_adr = self.packet.ip.src
             self.dst_adr = self.packet.ip.dst
+            print(self.packet.ip.dsfield_dscp)
             self.s_tos = self.packet.ip.dsfield_dscp
         elif 'IPv6' in self.packet:
             self.src_adr = self.packet.ipv6.src
@@ -58,8 +61,7 @@ class FlowAnalysis(Process):
             self.src_port = self.packet.tcp.srcport
             self.dst_port = self.packet.tcp.dstport
         elif 'ICMP' in self.packet:
-            self.src_port = self.packet.icmp.udp_srcport
-            self.dst_port = self.packet.icmp.udp_dstport
+            self.src_port = self.packet.icmp.checksum
         elif 'UDP' in self.packet:
             self.src_port = self.packet.udp.srcport
             self.dst_port = self.packet.udp.dstport
@@ -67,7 +69,7 @@ class FlowAnalysis(Process):
         self.state = ''
         self.state = self.calculate_network_state(self.packet)
         self.d_tos = ''
-        if not hasattr(self, 's_stos'):
+        if not hasattr(self, 's_tos'):
             self.s_tos = ''
 
         self.tot_pkts = 1
@@ -198,6 +200,9 @@ class FlowAnalysis(Process):
                 state = 'RSP'
         elif self.protocol == 'IGMP':
             state = 'INT'
+        elif self.protocol == 'ICMP':
+            state = ICMP_STATES[packet.icmp.type]
+
         return state
 
     def save_to_file(self):  # Parallel
