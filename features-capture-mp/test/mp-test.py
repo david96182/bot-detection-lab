@@ -66,9 +66,8 @@ if __name__ == '__main__':
     proc_list = []
 
     for num in range(1, PROCS+1):
-        print(num)
-        #new_process = Process(target=send_flow, args=(num,), name=f'proc-0{num}')
-        #proc_list.append(new_process)
-        #new_process.start()
+        new_process = Process(target=send_flow, args=(num,), name=f'proc-0{num}')
+        proc_list.append(new_process)
+        new_process.start()
 
 
