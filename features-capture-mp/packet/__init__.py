@@ -51,7 +51,6 @@ class FlowAnalysis(Process):
         elif 'IP' in self.packet:
             self.src_adr = self.packet.ip.src
             self.dst_adr = self.packet.ip.dst
-            print(self.packet.ip.dsfield_dscp)
             self.s_tos = self.packet.ip.dsfield_dscp
         elif 'IPv6' in self.packet:
             self.src_adr = self.packet.ipv6.src
