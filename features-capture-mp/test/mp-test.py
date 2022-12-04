@@ -7,6 +7,7 @@ import datetime
 import multiprocessing
 import os
 import random
+import sys
 import time
 from multiprocessing import Process
 
@@ -14,7 +15,6 @@ from scapy.layers.inet import IP, TCP
 from scapy.layers.l2 import Ether
 from scapy.sendrecv import sendp, send
 
-PROCS = 25
 IFACE = 'br-04bebcffef1f'
 FLAGS = ['F', 'S', 'R', 'P', 'A', 'E', 'C', 'U']
 
@@ -52,15 +52,23 @@ def send_flow(number):
 
 
 if __name__ == '__main__':
+    args = sys.argv
+    try:
+        PROCS = int(args[1])
+    except Exception as e:
+        print('No amount of bots specified')
+        sys.exit()
     print(PROCS)
     print(os.getgid())
     time.sleep(3)
 
+    sys.stdout = open(os.devnull, 'w')
     proc_list = []
 
-    for num in range(0, PROCS):
-        new_process = Process(target=send_flow, args=(num,), name=f'proc-0{num}')
-        proc_list.append(new_process)
-        new_process.start()
+    for num in range(1, PROCS+1):
+        print(num)
+        #new_process = Process(target=send_flow, args=(num,), name=f'proc-0{num}')
+        #proc_list.append(new_process)
+        #new_process.start()
 
 
