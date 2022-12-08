@@ -1,11 +1,52 @@
 services:
-  driver:
+  driver-1:
     image: selenium/standalone-firefox
     ports:
-    -  "4444:4444"
-    -  "7900:7900"
+    -  "4001:4444"
     networks:
-    -  prestashop_default
+    -  test_default
+    restart: always
+  driver-2:
+    image: selenium/standalone-firefox
+    ports:
+      - "4002:4444"
+    networks:
+      - test_default
+    restart: always
+  driver-3:
+    image: selenium/standalone-firefox
+    ports:
+      - "4003:4444"
+    networks:
+      - test_default
+    restart: always
+  driver-4:
+    image: selenium/standalone-firefox
+    ports:
+      - "4004:4444"
+    networks:
+      - test_default
+    restart: always
+  driver-5:
+    image: selenium/standalone-firefox
+    ports:
+      - "4005:4444"
+    networks:
+      - test_default
+    restart: always
 networks:
-  prestashop_default:
+  test_default:
     external: true
+
+
+
+#  driver-n:
+#    image: selenium/standalone-firefox
+#    ports:
+#      - "400[n]:4444"
+#    networks:
+#      - test_default
+#    restart: always
+#  networks:
+#    test_default:
+#      external: true

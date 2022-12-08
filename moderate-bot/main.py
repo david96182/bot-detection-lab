@@ -80,9 +80,10 @@ def login():
 if __name__ == '__main__':
     service = FirefoxService(executable_path='./geckodriver')
     firefox_options = webdriver.FirefoxOptions()
-    firefox_options.headless = True
+    # firefox_options.headless = True
     browser = webdriver.Firefox(options=firefox_options, service=service)
-    browser.get('localhost:8081')
+    browser.get('http://172.26.0.3')
+    print('Current page: %s' % browser.current_url)
     login()
 
     browser.implicitly_wait(10)

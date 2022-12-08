@@ -5,3 +5,4 @@
 *.bitnetflow
 moderate-bot/geckodriver.log
 geckodriver
+/sample-website/test/presta_logs/

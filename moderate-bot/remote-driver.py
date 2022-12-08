@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -7,6 +8,7 @@ import json
 
 
 def get_clothes():
+    print('GET CLOTHES')
     browser.find_element(By.ID, 'category-3').click()
     clothes = browser.find_elements(By.CLASS_NAME, 'product-description')
     clothes_data = []
@@ -26,6 +28,7 @@ def get_clothes():
 
 
 def get_accessories():
+    print('GET ACCESSORIES')
     browser.find_element(By.ID, 'category-6').click()
     accs = browser.find_elements(By.CLASS_NAME, 'product-description')
     accs_data = []
@@ -45,6 +48,7 @@ def get_accessories():
 
 
 def get_art():
+    print('GET ART..')
     browser.find_element(By.ID, 'category-9').click()
     arts = browser.find_elements(By.CLASS_NAME, 'product-description')
     art_data = []
@@ -64,12 +68,14 @@ def get_art():
 
 
 def get_discount():
+    print('GET DISCOUNT..')
     browser.find_element(By.CLASS_NAME, 'logo').click()
     browser.find_element(By.CLASS_NAME, 'all-product-link').click()
     time.sleep(random.randint(6, 13))
 
 
 def login():
+    print('LOGIN..')
     browser.find_element(By.CLASS_NAME, 'user-info').click()
     browser.find_element(By.ID, 'field-email').send_keys('puertadavid96@email.com')
     browser.find_element(By.ID, 'field-password').send_keys('Qwe1234567@rs*')  # 12345678
@@ -78,10 +84,26 @@ def login():
 
 
 if __name__ == '__main__':
+    remote_url = 'http://172.26.0.%s:4444/wd/hub'
+    args = sys.argv
+    try:
+        BOT = int(args[1])
+        remote_url = remote_url % str(BOT+3)
+        print(remote_url)
+    except Exception as e:
+        print('No number of bot specified')
+        print(e)
+        sys.exit()
     firefox_options = webdriver.FirefoxOptions()
-    firefox_options.headless = False
-    browser = webdriver.Remote(command_executor="http://127.0.0.1:4444/wd/hub", options=firefox_options)
-    browser.get('localhost:8081')
+    firefox_options.add_argument('--no-sandbox')
+    firefox_options.add_argument('--headless')
+    firefox_options.add_argument('--disable-gpu')
+    firefox_options.add_argument('--disable-dev-shm-usage')
+    firefox_options.add_argument("--window-size=1920,1080")
+    browser = webdriver.Remote(command_executor=remote_url, options=firefox_options)
+    browser.get('http://172.26.0.3')
+    print('Current page: %s' % browser.current_url)
+    print('READY')
     login()
 
     while True:

@@ -1,0 +1,41 @@
+
+
+services:
+  dbmysql:
+    container_name: psmysql
+    image: mysql
+    cap_add:
+      - SYS_NICE
+    volumes:
+       - mysqldata:/var/lib/mysql
+    environment:
+       MYSQL_ROOT_PASSWORD: 12345678
+       MYSQL_DATABASE: ps
+       MYSQL_USER: ps
+       MYSQL_PASSWORD: ps
+    ports:
+      - "3308:3306"
+    restart: unless-stopped
+
+  pspresta:
+    container_name: psweb
+    volumes:
+      - prestadata:/var/www/html
+      - ./presta_logs/:/var/log/
+    depends_on:
+      - dbmysql
+    image: prestashop/prestashop
+    ports:
+      - "8088:80"
+      - "9000"
+    environment:
+      PS_INSTALL_AUTO: 1
+      DB_SERVER: dbmysql
+      DB_USER: ps
+      DB_PASSWD: ps
+      DB_NAME: ps
+    restart: unless-stopped
+volumes:
+  mysqldata:
+  prestadata:
+
