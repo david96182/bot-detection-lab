@@ -78,7 +78,7 @@ def login():
 
 
 if __name__ == '__main__':
-    service = FirefoxService(executable_path='./geckodriver')
+    service = FirefoxService()
     firefox_options = webdriver.FirefoxOptions()
     # firefox_options.headless = True
     browser = webdriver.Firefox(options=firefox_options, service=service)
