@@ -53,8 +53,12 @@ def get_flow_id(packet):
     Returns the flow id of a network packet.
     """
     pkt_protocol = packet.highest_layer
-    if pkt_protocol == 'DATA':
-        pkt_protocol = packet.layers[len(packet.layers) - 2].layer_name
+    if 'TCP' in packet:
+        pkt_protocol = 'TCP'
+    elif 'UDP' in packet:
+        pkt_protocol = 'UDP'
+    src_port = ''
+    dst_port = ''
     try:
         if pkt_protocol == 'ARP':
             src_ip = packet.arp.src_proto_ipv4
@@ -74,8 +78,7 @@ def get_flow_id(packet):
                 src_port = packet.tcp.srcport
                 dst_port = packet.tcp.dstport
             elif 'ICMP' in packet:
-                src_port = packet.icmp.udp_srcport
-                dst_port = packet.icmp.udp_dstport
+                src_port = packet.icmp.checksum
             else:
                 src_port = packet.udp.srcport
                 dst_port = packet.udp.dstport

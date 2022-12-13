@@ -70,12 +70,12 @@ class FlowAnalysis:
         self.src_bytes = int(packet.length)
 
         self.flow = 'Background'
-        if '172.18.0' in self.src_adr or '172.18.0' in self.dst_adr:
+        if '172.26.0' in self.src_adr or '172.26.0' in self.dst_adr:
             last_src = None
             last_dst = None
-            if '172.18.0' in self.src_adr:
+            if '172.26.0' in self.src_adr:
                 last_src = int(self.src_adr.split('.')[len(self.src_adr.split('.')) - 1])
-            if '172.18.0' in self.dst_adr:
+            if '172.26.0' in self.dst_adr:
                 last_dst = int(self.dst_adr.split('.')[len(self.dst_adr.split('.')) - 1])
             if (last_src and last_src > 3) or (last_dst and last_dst > 3):
                 self.flow = 'Botnet'
@@ -189,7 +189,7 @@ class FlowAnalysis:
             try:
                 f.write(f'{self.start_time},{self.duration},{self.protocol},{self.src_adr},{self.src_port},'
                         f'{self.dst_adr},{self.dst_port},{self.state},{self.s_tos},{self.d_tos},{self.tot_pkts},'
-                        f'{self.tot_bytes},{self.src_bytes}\n')
+                        f'{self.tot_bytes},{self.src_bytes},flow={self.flow}\n')
                 logging.info('Saving to file flow with id: %s', self.name)
             except Exception as e:
                 logging.error('Error writing to file: ' + str(e))

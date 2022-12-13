@@ -27,15 +27,15 @@ class Capture:
         capture = LiveCapture(self.interface, output_file=self.out_file)
         logging.info('Starting capture on interface %s', self.interface)
 
-        packets = capture.sniff_continuously(packet_count=0)
+        packets = capture.sniff_continuously(packet_count=10000)
         iterator = TimeoutIterator(packets, timeout=0.1, sentinel=None)
         repeat = True
         counter = 0
         while repeat:
             packet = next(iterator, None)
-            print(packet)
+
             if packet is not None:
-                print('Packet')
+
                 counter += 1
                 key, inv_key = get_flow_id(packet)
 
@@ -49,11 +49,11 @@ class Capture:
                     logging.info(f'Captured packet with id: {key}')
                     netflow = FlowAnalysis(key, packet)
                     self.net_flows[key] = netflow
-            print('Update')
+
             self.update_netflows()
 
             # for profiling
-            if counter == 200000 and len(self.net_flows) == 0:
+            if counter == 10000 and len(self.net_flows) == 0:
                 print('Finishing.')
                 break
 

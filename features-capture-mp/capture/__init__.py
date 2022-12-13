@@ -24,7 +24,7 @@ class Capture:
         """
         capture = LiveCapture(self.interface, output_file=self.out_file,)
         logging.info('Starting capture on interface %s', self.interface)
-        for packet in capture.sniff_continuously(packet_count=0):
+        for packet in capture.sniff_continuously(packet_count=10000):
             key, inv_key = self.get_flow_id(packet)
             processes_names = get_processes_names()
             if key in processes_names or inv_key in processes_names:

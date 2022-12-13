@@ -11,7 +11,7 @@ from scapy.layers.l2 import Ether
 from scapy.sendrecv import sendp, send
 
 if __name__ == '__main__':
-    iface = "br-04bebcffef1f"
+    iface = "br-71258deca73a"
     packet = Ether() / IP(dst="1.2.3.4", src="5.6.7.8", tos=2, len=1959) / TCP(sport=1996, dport=1996,
                                                                                flags='FSRPA')
     packet.time = datetime.datetime(2022, 7, 22, 22, 22, 22, 22)

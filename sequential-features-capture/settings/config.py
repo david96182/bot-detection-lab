@@ -1,6 +1,6 @@
 # interface
 # The interface to listen on.
-NETWORK_INTERFACE = 'br-04bebcffef1f'
+NETWORK_INTERFACE = 'br-71258deca73a'  # br-04bebcffef1f
 
 # pcap
 # The path to the pcap file to save.
