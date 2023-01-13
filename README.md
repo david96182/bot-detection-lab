@@ -1,7 +1,5 @@
 ## Bot-Detection-Lab
 
----
-
 ### Description
 
 This repository contains a tool for accurately capture information in real time for bot detection on the web. The repository consists of two components: a test environment for bot detection and a features capture tool.
