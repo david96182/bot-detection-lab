@@ -1,4 +1,5 @@
 ## Bot-Detection-Lab
+![Py versions](https://img.shields.io/pypi/pyversions/Django)![Repo Size](https://img.shields.io/github/repo-size/david96182/bot-detection-lab)![License](https://img.shields.io/github/license/david96182/bot-detection-lab)
 
 ### Description
 
@@ -91,6 +92,8 @@ The characteristics obtained by the tool are captured at the network level. Thes
    ```bash
    git clone https://github.com/david96182/SniffPyBot.git && cd SniffPyBot/
    ```
+
+2. Install [Wireshark](https://www.wireshark.org/download.html)
 
 2. Install python requirements:
 
