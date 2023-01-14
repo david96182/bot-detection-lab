@@ -27,7 +27,7 @@ class Capture:
         capture = LiveCapture(self.interface, output_file=self.out_file)
         logging.info('Starting capture on interface %s', self.interface)
 
-        packets = capture.sniff_continuously(packet_count=10000)
+        packets = capture.sniff_continuously(packet_count=0)
         iterator = TimeoutIterator(packets, timeout=0.1, sentinel=None)
         repeat = True
         counter = 0
