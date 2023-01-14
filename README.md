@@ -1,5 +1,5 @@
 ## Bot-Detection-Lab
-![Py versions](https://img.shields.io/pypi/pyversions/Django)![Repo Size](https://img.shields.io/github/repo-size/david96182/bot-detection-lab)![License](https://img.shields.io/github/license/david96182/bot-detection-lab)
+![Py versions](https://img.shields.io/pypi/pyversions/Django)  ![Repo Size](https://img.shields.io/github/repo-size/david96182/bot-detection-lab)  ![License](https://img.shields.io/github/license/david96182/bot-detection-lab)
 
 ### Description
 
