@@ -15,6 +15,7 @@ This project is created with the goal of helping to detect, identify, mitigate a
 ### Features
 
 Captures Information from User Interactions in Real-Time: The tool captures information from user interaction with a website at network level. This information can be used with artificial intelligence algorithms for bot detection. This enables an accurate analysis of suspicious actions from both users and bots. 
+
 Test Environment with Bot and Web Service: Includes a test environment composed of a bot and a web service which can be used for development and evaluation purposes. This environment simulates a real environment that can be used to test classification algorithms. A self-contained test environment provides insight into how bots might interact with a web service. 
 
 ---
@@ -119,6 +120,11 @@ The characteristics obtained by the tool are captured at the network level. Thes
 
 The characteristics obtained are not limited to those, in the future they can be extended, or they can be extended depending on the algorithms with which the tool will be mixed to capture information. Other more sophisticated types of bots could also be added to have more variety of data and detection complexity.
 Artificial intelligence algorithms for bot detection could be added. And even a complete bot detection system can be created (why not?).
+
+---
+
+### License
+This project is [GNU GPLv3](LICENSE) License.
 
 ---
 
